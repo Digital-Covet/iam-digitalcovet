@@ -1,0 +1,472 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  employee
+  admin
+  superadmin
+}
+
+enum AppAccess {
+  Share
+  Portfolio
+}
+
+enum AvatarTone {
+  primary
+  neutral
+}
+
+enum AuditLogEvent {
+  granted_role
+  failed_login
+  file_deleted
+  session_initiated
+  token_renewed
+  policy_violation
+}
+
+enum AuditLogTargetApp {
+  iam_system
+  share
+  portfolio
+}
+
+enum AuditLogStatus {
+  success
+  failed
+  warning
+}
+
+enum AuthProviderType {
+  password
+  two_factor
+  sso_saml
+  sso_oidc
+  google
+  microsoft
+  github
+}
+
+enum AuthMethodStatus {
+  enabled
+  disabled
+  configuring
+}
+
+model User {
+  id                  String       @id
+  name                String
+  email               String
+  emailVerified       Boolean      @default(false)
+  image               String?
+
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  twoFactorEnabled    Boolean?     @default(false)
+  passwordChanged     Boolean      @default(false)
+
+  role                UserRole     @default(employee)
+
+  banned              Boolean?     @default(false)
+  banReason           String?
+  banExpires          DateTime?
+
+  departmentId        String?
+
+  initials            String?
+  avatarTone          AvatarTone?  @default(primary)
+  appAccess           AppAccess[]
+
+  sessions            Session[]
+  accounts            Account[]
+  twofactors          TwoFactor[]
+  auditLogs           AuditLog[]
+  members             Member[]
+  invitations         Invitation[] @relation("InvitationInvitedBy")
+  assignedInvitations Invitation[] @relation("InvitationUser")
+  oauthclients        OauthClient[]
+  oauthrefreshtokens  OauthRefreshToken[]
+  oauthaccesstokens   OauthAccessToken[]
+  oauthconsents       OauthConsent[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id                   String    @id
+  expiresAt            DateTime
+  token                String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  ipAddress            String?
+  userAgent            String?
+
+  device               String?
+  browser              String?
+  location             String?
+  lastActivity         DateTime?
+
+  userId               String
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy       String?
+  activeOrganizationId String?
+
+  oauthrefreshtokens   OauthRefreshToken[]
+  oauthaccesstokens    OauthAccessToken[]
+
+  @@unique([token])
+  @@index([userId])
+  @@index([userId, expiresAt])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+
+  accountId             String
+  providerId            String
+
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+
+  scope                 String?
+  password              String?
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([providerId, accountId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@index([identifier, expiresAt])
+  @@index([value])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id                      String    @id
+
+  secret                  String
+  backupCodes             String
+
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  verified                Boolean?  @default(true)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  @@index([userId])
+  @@map("twoFactor")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String    @id @default(cuid())
+
+  email          String
+
+  token          String?   @unique
+
+  role           UserRole  @default(employee)
+
+  status         String    @default("pending")
+  expiresAt      DateTime  @map("expires_at")
+  usedAt         DateTime? @map("used_at")
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  invitedBy      String?   @map("invited_by")
+  userId         String?   @map("user_id")
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  invitedByUser  User? @relation("InvitationInvitedBy", fields: [invitedBy], references: [id])
+  user           User? @relation("InvitationUser", fields: [userId], references: [id])
+
+  @@index([email])
+  @@index([organizationId])
+  @@map("invitations")
+}
+
+model Jwks {
+  id         String    @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
+
+  @@map("jwks")
+}
+
+model OauthClient {
+  id                      String              @id
+  clientId                String
+  clientSecret            String?
+  disabled                Boolean?            @default(false)
+  skipConsent             Boolean?
+  enableEndSession        Boolean?
+  subjectType             String?
+  scopes                  String[]
+  userId                  String?
+  user                    User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt               DateTime?
+  updatedAt               DateTime?
+  name                    String?
+  uri                     String?
+  icon                    String?
+  contacts                String[]
+  tos                     String?
+  policy                  String?
+  softwareId              String?
+  softwareVersion         String?
+  softwareStatement       String?
+  redirectUris            String[]
+  postLogoutRedirectUris  String[]
+  tokenEndpointAuthMethod String?
+  grantTypes              String[]
+  responseTypes           String[]
+  public                  Boolean?
+  type                    String?
+  requirePKCE             Boolean?
+  referenceId             String?
+  metadata                Json?
+  oauthrefreshtokens      OauthRefreshToken[]
+  oauthaccesstokens       OauthAccessToken[]
+  oauthconsents           OauthConsent[]
+
+  @@unique([clientId])
+  @@index([userId])
+  @@map("oauthClient")
+}
+
+model OauthRefreshToken {
+  id                String             @id
+  token             String
+  clientId          String
+  oauthclient       OauthClient        @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  sessionId         String?
+  session           Session?           @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  userId            String
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referenceId       String?
+  expiresAt         DateTime
+  createdAt         DateTime
+  revoked           DateTime?
+  authTime          DateTime?
+  scopes            String[]
+  oauthaccesstokens OauthAccessToken[]
+
+  @@unique([token])
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("oauthRefreshToken")
+}
+
+model OauthAccessToken {
+  id                String             @id
+  token             String
+  clientId          String
+  oauthclient       OauthClient        @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  sessionId         String?
+  session           Session?           @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  userId            String?
+  user              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referenceId       String?
+  refreshId         String?
+  oauthrefreshtoken OauthRefreshToken? @relation(fields: [refreshId], references: [id], onDelete: Cascade)
+  expiresAt         DateTime
+  createdAt         DateTime
+  scopes            String[]
+
+  @@unique([token])
+  @@index([clientId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([refreshId])
+  @@map("oauthAccessToken")
+}
+
+model OauthConsent {
+  id          String      @id
+  clientId    String
+  oauthclient OauthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referenceId String?
+  scopes      String[]
+  createdAt   DateTime
+  updatedAt   DateTime
+
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauthConsent")
+}
+
+model AuditLog {
+  id              String            @id @default(cuid())
+  timestamp       DateTime          @default(now())
+
+  actorUserId     String?
+  actorName       String
+  actorEmail      String
+  actorAvatarUrl  String?
+  actorInitials   String
+
+  event           AuditLogEvent
+  targetApp       AuditLogTargetApp
+
+  ipAddress       String?
+  location        String?
+
+  status          AuditLogStatus
+
+  createdAt       DateTime          @default(now())
+
+  actor           User?             @relation(fields: [actorUserId], references: [id])
+
+  @@index([actorUserId])
+  @@index([timestamp])
+  @@index([event])
+  @@index([status])
+  @@map("audit_log")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  summary     String
+  isCustom    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions Permission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String
+  label       String
+  granted     Boolean  @default(false)
+
+  sectionId   String
+  section     PermissionSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  roleId      String
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([roleId, sectionId, key])
+  @@index([roleId])
+  @@index([sectionId])
+  @@map("permission")
+}
+
+model PermissionSection {
+  id          String   @id @default(cuid())
+  key         String
+  title       String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions Permission[]
+
+  @@unique([key])
+  @@map("permission_section")
+}
+
+model AuthMethodConfig {
+  id              String           @id @default(cuid())
+  provider        AuthProviderType @unique
+  label           String
+  description     String
+  status          AuthMethodStatus @default(disabled)
+  enrolledUsers   Int              @default(0)
+  lastUpdated     DateTime?
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("auth_method_config")
+}
+
+model PasswordPolicy {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  label           String
+  description     String
+  value           Json
+  enabled         Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("password_policy")
+}
