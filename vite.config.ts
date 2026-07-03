@@ -7,7 +7,19 @@ import path from "path";
 
 export default defineConfig({
   plugins: [solidStart(), tailwindcss(),
-  nitro({ preset: "vercel" }),
+  nitro({
+    preset: "vercel",
+    routeRules: {
+      "/api/auth/**": {
+        cors: {
+          origin: ["https://share.digitalcovet.com", "https://portfolio.digitalcovet.com"],
+          methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+          allowHeaders: ["Content-Type", "Authorization"],
+          credentials: true,
+        },
+      },
+    },
+  }),
   ],
   resolve: {
     alias: {
