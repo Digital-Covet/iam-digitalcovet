@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-  plugins: [solidStart(), tailwindcss(),
+  plugins: [solidStart({ middleware: "./src/middleware.ts" }), tailwindcss(),
   nitro({ preset: "vercel" }),
   ],
   resolve: {
