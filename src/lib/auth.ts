@@ -14,7 +14,7 @@ const storeBackupCodes =
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: {
-    allowedHosts: ["share.digitalcovet.com", "portfolio.digitalcovet.com", "localhost:5173"],
+    allowedHosts: ["iam.digitalcovet.com", "share.digitalcovet.com", "portfolio.digitalcovet.com", "localhost:5173"],
     protocol: process.env.NODE_ENV === "production" ? "https" : "http",
   },
   database: prismaAdapter(prisma, {
@@ -72,6 +72,16 @@ export const auth = betterAuth({
       },
     },
   },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: "digitalcovet.com",
+    },
+  },
+  trustedOrigins: [
+    "https://share.digitalcovet.com",
+    "https://portfolio.digitalcovet.com",
+  ],
   plugins: [
     twoFactor({
       issuer: "digitalcovet",
