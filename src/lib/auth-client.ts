@@ -12,7 +12,12 @@ export const authClient = createAuthClient({
     twoFactorClient({
       onTwoFactorRedirect() {
         if (typeof window !== "undefined") {
-          window.location.replace("/auth/verify-2fa");
+          const params = new URLSearchParams(window.location.search);
+          const redirect = params.get("redirect");
+          const url = redirect
+            ? `/auth/verify-2fa?redirect=${encodeURIComponent(redirect)}`
+            : "/auth/verify-2fa";
+          window.location.replace(url);
         }
       },
     }),

@@ -1,8 +1,13 @@
 import { Meta, Title } from "@solidjs/meta";
+import { useSearchParams } from "@solidjs/router";
 import TwoFactorVerify from "@/components/auth/two-factor-verify";
 import { pageMetadata } from "@/lib/seo";
 
 export default function Verify2FAPage() {
+  const [searchParams] = useSearchParams();
+  const redirectParam = searchParams.redirect;
+  const redirectTo = Array.isArray(redirectParam) ? redirectParam[0] : redirectParam;
+
 	return (
 		<>
 			<Title>{pageMetadata.verify2fa.title}</Title>
@@ -17,7 +22,7 @@ export default function Verify2FAPage() {
               Enter your security code to complete sign-in.
             </p>
           </div>
-          <TwoFactorVerify redirectTo="/dashboard" />
+          <TwoFactorVerify redirectTo={redirectTo || "/dashboard"} />
         </div>
       </div>
     </>

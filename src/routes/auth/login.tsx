@@ -47,14 +47,7 @@ export default function LoginForm() {
 
     setError(null);
     setIsLoading(true);
-    const response = await authClient.signIn.email({
-      email: email(),
-      password: password(),
-    });
 
-    console.log("SIGN IN RESPONSE");
-    console.log(response);
-    console.log(JSON.stringify(response, null, 2));
     await authClient.signIn.email(
       {
         email: email(),
