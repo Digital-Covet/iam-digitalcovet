@@ -92,7 +92,11 @@ export default function TwoFactorVerify({
         type: "success",
       });
       onVerified?.();
-      navigate(redirectTo, { replace: true });
+      if (redirectTo.startsWith("http")) {
+        window.location.replace(redirectTo);
+      } else {
+        navigate(redirectTo, { replace: true });
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Invalid code. Please try again.";
