@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
@@ -174,7 +175,34 @@ async function main() {
     ],
   });
 
-  console.log("Seed complete: 3 roles, auth methods, password policies");
+  // ── OAuth Clients (SSO) ──
+  const existingClient = await prisma.oauthClient.findUnique({
+    where: { clientId: "portfolio" },
+  });
+
+  if (!existingClient) {
+    await prisma.oauthClient.create({
+      data: {
+        id: randomUUID(),
+        clientId: "portfolio",
+        clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
+        redirectUris: ["https://portfolio.digitalcovet.com/api/auth/callback/portfolio"],
+        skipConsent: true,
+        enableEndSession: true,
+        scopes: ["openid", "profile", "email"],
+        grantTypes: ["authorization_code", "refresh_token"],
+        responseTypes: ["code"],
+        tokenEndpointAuthMethod: "client_secret_post",
+        name: "Digital Covet Portfolio",
+        uri: "https://portfolio.digitalcovet.com",
+      },
+    });
+    console.log("Created OAuth client: portfolio");
+  } else {
+    console.log("OAuth client 'portfolio' already exists, skipping");
+  }
+
+  console.log("Seed complete: 3 roles, auth methods, password policies, OAuth clients");
 }
 
 main()
