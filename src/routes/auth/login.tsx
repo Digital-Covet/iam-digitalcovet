@@ -6,6 +6,25 @@ import { createSignal, type JSX, Show } from "solid-js";
 import { authToaster, AuthToaster } from "@/components/auth/auth-toaster";
 import { authClient } from "@/lib/auth-client";
 import { pageMetadata } from "@/lib/seo";
+
+const TRUSTED_REDIRECT_ORIGINS = [
+  "https://share.digitalcovet.com",
+  "https://portfolio.digitalcovet.com",
+];
+
+function sanitizeRedirect(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (TRUSTED_REDIRECT_ORIGINS.includes(parsed.origin)) {
+      return parsed.origin + parsed.pathname + parsed.search + parsed.hash;
+    }
+  } catch {
+    // Not a valid URL — reject
+  }
+  return null;
+}
+
 export default function LoginForm() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -15,6 +34,12 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const isOidcFlow = () => Boolean(searchParams.oauth_query);
+  const safeRedirectUrl = () => {
+    const raw = searchParams.redirect;
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    return sanitizeRedirect(value ?? null);
+  };
+
   const handleSubmit: JSX.EventHandler<HTMLFormElement, SubmitEvent> = async (
     e,
   ) => {
@@ -59,6 +84,12 @@ export default function LoginForm() {
               `/api/auth/oauth2/authorize?${qs.toString()}`,
             );
 
+            return;
+          }
+
+          const redirect = safeRedirectUrl();
+          if (redirect) {
+            window.location.replace(redirect);
             return;
           }
 
