@@ -24,6 +24,9 @@ app.config.timestamp_*.js
 # Temp
 gitignore
 
+# Repomix generated output
+repomix-output.md
+
 # System Files
 .DS_Store
 Thumbs.db
