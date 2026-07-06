@@ -72,12 +72,7 @@ export const auth = betterAuth({
       },
     },
   },
-  advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-      domain: "digitalcovet.com",
-    },
-  },
+  advanced: {},
   trustedOrigins: [
     "https://share.digitalcovet.com",
     "https://portfolio.digitalcovet.com",
