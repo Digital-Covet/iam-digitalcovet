@@ -33,9 +33,6 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
-  const isOidcFlow = () => Boolean(searchParams.client_id && searchParams.redirect_uri);
-  const oauthAuthorizeUrl = () =>
-    `${window.location.origin}/api/auth/oauth2/authorize${window.location.search}`;
   const safeRedirectUrl = () => {
     const raw = searchParams.redirect;
     const value = Array.isArray(raw) ? raw[0] : raw;
@@ -69,11 +66,12 @@ export default function LoginForm() {
             type: "success",
           });
 
-          if (isOidcFlow()) {
-            // Re-drive the authorize endpoint so oauthProvider can see the
-            // freshly-established session and issue the authorization code
-            // redirect to the client. Same proven pattern as verify-2fa.tsx.
-            window.location.replace(oauthAuthorizeUrl());
+          // When an OAuth flow is in progress, the oauthProvider plugin
+          // automatically re-dispatches the authorize endpoint on the server
+          // after session creation. The client's redirectPlugin then navigates
+          // the browser to the client app's callback URL. If ctx.data.redirect
+          // is set, the plugin handled it — don't override it here.
+          if (ctx.data.redirect) {
             return;
           }
 
