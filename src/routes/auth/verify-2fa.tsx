@@ -3,20 +3,14 @@ import { useSearchParams } from "@solidjs/router";
 import TwoFactorVerify from "@/components/auth/two-factor-verify";
 import { pageMetadata } from "@/lib/seo";
 
-function readOauthRedirectUrl(): string {
-  if (typeof window === "undefined") return "";
-  const search = window.location.search;
-  if (!search) return "";
-  const params = new URLSearchParams(search);
-  if (!params.has("client_id") || !params.has("response_type")) return "";
-  return `${window.location.origin}/api/auth/oauth2/authorize${search}`;
-}
-
 export default function Verify2FAPage() {
   const [searchParams] = useSearchParams();
 
-  const oauthRedirectUrl = readOauthRedirectUrl();
-  const isOAuthFlow = Boolean(oauthRedirectUrl);
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  const isOAuthFlow = !!(search && search.includes("client_id=") && search.includes("response_type="));
+  const oauthRedirectUrl = isOAuthFlow
+    ? `${window.location.origin}/api/auth/oauth2/authorize${search}`
+    : "";
 
   const redirectParam = Array.isArray(searchParams.redirect)
     ? searchParams.redirect[0]
@@ -37,7 +31,10 @@ export default function Verify2FAPage() {
               Enter your security code to complete sign-in.
             </p>
           </div>
-          <TwoFactorVerify redirectTo={isOAuthFlow ? oauthRedirectUrl : standardRedirect} />
+          <TwoFactorVerify
+            redirectTo={isOAuthFlow ? "" : standardRedirect}
+            onVerified={isOAuthFlow ? () => window.location.replace(oauthRedirectUrl) : undefined}
+          />
         </div>
       </div>
     </>
