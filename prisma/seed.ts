@@ -186,7 +186,7 @@ async function main() {
         id: randomUUID(),
         clientId: "portfolio",
         clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
-        redirectUris: ["https://portfolio.digitalcovet.com/api/auth/callback/portfolio"],
+        redirectUris: ["https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio"],
         skipConsent: true,
         enableEndSession: true,
         scopes: ["openid", "profile", "email"],
