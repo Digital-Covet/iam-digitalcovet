@@ -1,7 +1,11 @@
 import "dotenv/config";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
+
+function hashClientSecret(secret: string): string {
+  return createHash("sha256").update(secret, "utf8").digest("base64url");
+}
 
 const adapter = new PrismaNeon({
   connectionString: process.env.DATABASE_URL!,
@@ -185,7 +189,7 @@ async function main() {
       data: {
         id: randomUUID(),
         clientId: "portfolio",
-        clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
+        clientSecret: hashClientSecret(process.env.OAUTH_CLIENT_SECRET ?? ""),
         redirectUris: ["https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio"],
         skipConsent: true,
         enableEndSession: true,

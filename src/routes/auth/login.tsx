@@ -33,7 +33,7 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
-  const isOidcFlow = () => Boolean(searchParams.oauth_query);
+  const isOidcFlow = () => Boolean(searchParams.client_id && searchParams.redirect_uri);
   const safeRedirectUrl = () => {
     const raw = searchParams.redirect;
     const value = Array.isArray(raw) ? raw[0] : raw;
@@ -60,25 +60,22 @@ export default function LoginForm() {
             return;
           }
 
+          // For OIDC flows, the server-side after-hook (oauthProvider)
+          // detects the new session, retrieves the stored OAuth query
+          // from oAuthState, and redirects to the client's redirect_uri
+          // with the authorization code. Do NOT navigate away here.
+          if (isOidcFlow()) {
+            authToaster.create({
+              title: "Signed in successfully!",
+              type: "success",
+            });
+            return;
+          }
+
           authToaster.create({
             title: "Signed in successfully!",
             type: "success",
           });
-
-          if (isOidcFlow()) {
-            const oauthQuery = Array.isArray(searchParams.oauth_query)
-              ? searchParams.oauth_query[0]
-              : searchParams.oauth_query;
-
-            const qs = new URLSearchParams();
-            qs.set("oauth_query", oauthQuery ?? "");
-
-            window.location.replace(
-              `/api/auth/oauth2/authorize?${qs.toString()}`,
-            );
-
-            return;
-          }
 
           const redirect = safeRedirectUrl();
           if (redirect) {
