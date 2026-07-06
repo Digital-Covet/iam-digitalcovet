@@ -1,5 +1,6 @@
 import type { Component } from "solid-js";
 import { createSignal, createMemo } from "solid-js";
+import type { AuditLogEntry } from "@/types";
 import { Download, RefreshCw, ShieldAlert } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuditLogsFilterBar from "@/components/audit-logs/AuditLogFilterBar";
@@ -17,7 +18,7 @@ const AuditLogsPage: Component = () => {
     const query = searchQuery().trim().toLowerCase();
     const status = selectedStatus();
 
-    return auditLogEntries.filter((entry) => {
+    return auditLogEntries.filter((entry: AuditLogEntry) => {
       const matchesStatus =
         status === "" || entry.status === status;
 

@@ -50,13 +50,13 @@ const getAuditLogs = query(async () => {
         timestamp: log.timestamp.toISOString(),
         actorName: log.actorName,
         actorEmail: log.actorEmail,
-        actorAvatarUrl: log.actorAvatarUrl,
+        actorAvatarUrl: log.actorAvatarUrl ?? undefined,
         actorInitials: log.actorInitials,
-        event: eventLabels[log.event] ?? log.event,
-        targetApp: targetLabels[log.targetApp] ?? log.targetApp,
+        event: (eventLabels[log.event] ?? log.event) as AuditLogEntry["event"],
+        targetApp: (targetLabels[log.targetApp] ?? log.targetApp) as AuditLogEntry["targetApp"],
         ipAddress: ip ?? "N/A",
         location: location ?? "Unknown",
-        status: statusLabels[log.status] ?? log.status,
+        status: (statusLabels[log.status] ?? log.status) as AuditLogEntry["status"],
       };
     }),
   );

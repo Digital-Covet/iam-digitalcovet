@@ -34,6 +34,8 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const isOidcFlow = () => Boolean(searchParams.client_id && searchParams.redirect_uri);
+  const oauthAuthorizeUrl = () =>
+    `${window.location.origin}/api/auth/oauth2/authorize${window.location.search}`;
   const safeRedirectUrl = () => {
     const raw = searchParams.redirect;
     const value = Array.isArray(raw) ? raw[0] : raw;
@@ -62,22 +64,18 @@ export default function LoginForm() {
             return;
           }
 
-          // For OIDC flows, the server-side after-hook (oauthProvider)
-          // detects the new session, retrieves the stored OAuth query
-          // from oAuthState, and redirects to the client's redirect_uri
-          // with the authorization code. Do NOT navigate away here.
-          if (isOidcFlow()) {
-            authToaster.create({
-              title: "Signed in successfully!",
-              type: "success",
-            });
-            return;
-          }
-
           authToaster.create({
             title: "Signed in successfully!",
             type: "success",
           });
+
+          if (isOidcFlow()) {
+            // Re-drive the authorize endpoint so oauthProvider can see the
+            // freshly-established session and issue the authorization code
+            // redirect to the client. Same proven pattern as verify-2fa.tsx.
+            window.location.replace(oauthAuthorizeUrl());
+            return;
+          }
 
           const redirect = safeRedirectUrl();
           if (redirect) {

@@ -8,7 +8,7 @@ import {
   Shield,
   Users,
 } from "lucide-solid";
-import type { NavItem } from "@/types";
+import type { AuditLogEntry, NavItem } from "@/types";
 
 export const primaryNavItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -23,3 +23,5 @@ export const footerNavItems: NavItem[] = [
   { label: "Support", icon: LifeBuoy, href: "#" },
   { label: "Sign Out", icon: LogOut, href: "#" },
 ];
+
+export const auditLogEntries: AuditLogEntry[] = [];

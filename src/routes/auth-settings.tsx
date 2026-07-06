@@ -96,7 +96,7 @@ const getAuthData = query(async () => {
         userName: s.user.name,
         userEmail: s.user.email,
         userInitials: s.user.initials ?? s.user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-        userAvatarUrl: s.user.image,
+        userAvatarUrl: s.user.image ?? undefined,
         device,
         browser,
         ipAddress: ip ?? "N/A",

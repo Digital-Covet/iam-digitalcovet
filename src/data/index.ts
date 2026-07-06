@@ -1,1 +1,1 @@
-export { primaryNavItems, footerNavItems } from "./mock-data";
+export { primaryNavItems, footerNavItems, auditLogEntries } from "./mock-data";
