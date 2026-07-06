@@ -55,19 +55,10 @@ export default function LoginForm() {
       },
       {
         onSuccess: (ctx) => {
-          // For OIDC flows with 2FA required, the twoFactorClient plugin
-          // will redirect to verify-2fa. Save OAuth params to sessionStorage
-          // so the verify-2fa page can resume the OAuth flow after 2FA.
-          if (ctx.data.twoFactorRedirect && isOidcFlow()) {
-            const paramsStr = window.location.search;
-            if (paramsStr) {
-              sessionStorage.setItem("oauth_params", paramsStr);
-            }
-            return;
-          }
-
-          // Let the twoFactorClient plugin perform the redirect (no OIDC).
           if (ctx.data.twoFactorRedirect) {
+            if (isOidcFlow()) {
+              sessionStorage.setItem("oauth_redirect_params", window.location.search);
+            }
             return;
           }
 

@@ -5,11 +5,10 @@ import { pageMetadata } from "@/lib/seo";
 
 function readOauthRedirectUrl(): string {
   if (typeof window === "undefined") return "";
-  const savedParams = sessionStorage.getItem("oauth_params");
-  sessionStorage.removeItem("oauth_params");
-  if (!savedParams) return "";
-  const params = savedParams.startsWith("?") ? savedParams.slice(1) : savedParams;
-  return `${window.location.origin}/api/auth/oauth2/authorize?${params}`;
+  const saved = sessionStorage.getItem("oauth_redirect_params");
+  sessionStorage.removeItem("oauth_redirect_params");
+  if (!saved) return "";
+  return `${window.location.origin}/api/auth/oauth2/authorize${saved}`;
 }
 
 export default function Verify2FAPage() {
