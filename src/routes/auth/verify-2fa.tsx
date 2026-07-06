@@ -1,46 +1,27 @@
 import { Meta, Title } from "@solidjs/meta";
 import { useSearchParams } from "@solidjs/router";
-import { createSignal } from "solid-js";
 import TwoFactorVerify from "@/components/auth/two-factor-verify";
 import { pageMetadata } from "@/lib/seo";
 
+function readOauthRedirectUrl(): string {
+  if (typeof window === "undefined") return "";
+  const savedParams = sessionStorage.getItem("oauth_params");
+  sessionStorage.removeItem("oauth_params");
+  if (!savedParams) return "";
+  const params = savedParams.startsWith("?") ? savedParams.slice(1) : savedParams;
+  return `${window.location.origin}/api/auth/oauth2/authorize?${params}`;
+}
+
 export default function Verify2FAPage() {
   const [searchParams] = useSearchParams();
-  const [verified, setVerified] = createSignal(false);
 
-  const clientId = Array.isArray(searchParams.client_id)
-    ? searchParams.client_id[0]
-    : searchParams.client_id;
-  const redirectUri = Array.isArray(searchParams.redirect_uri)
-    ? searchParams.redirect_uri[0]
-    : searchParams.redirect_uri;
-  const isOAuthFlow = Boolean(clientId && redirectUri);
-
-  const buildAuthorizeUrl = (): string => {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(searchParams)) {
-      if (key === "oauth_query") {
-        params.set(key, Array.isArray(value) ? value[0] : (value ?? ""));
-      } else if (key === "client_id" || key === "redirect_uri" || key === "state"
-        || key === "code_challenge" || key === "code_challenge_method"
-        || key === "scope" || key === "response_type") {
-        params.set(key, Array.isArray(value) ? value[0] : (value ?? ""));
-      }
-    }
-    return `/api/auth/oauth2/authorize?${params.toString()}`;
-  };
+  const oauthRedirectUrl = readOauthRedirectUrl();
+  const isOAuthFlow = Boolean(oauthRedirectUrl);
 
   const redirectParam = Array.isArray(searchParams.redirect)
     ? searchParams.redirect[0]
     : searchParams.redirect;
   const standardRedirect = redirectParam || "/dashboard";
-
-  const handleVerified = () => {
-    setVerified(true);
-    if (isOAuthFlow) {
-      window.location.replace(buildAuthorizeUrl());
-    }
-  };
 
   return (
     <>
@@ -56,14 +37,7 @@ export default function Verify2FAPage() {
               Enter your security code to complete sign-in.
             </p>
           </div>
-          {verified() ? (
-            <p class="text-sm text-center">Redirecting...</p>
-          ) : (
-            <TwoFactorVerify
-              redirectTo={isOAuthFlow ? undefined : standardRedirect}
-              onVerified={isOAuthFlow ? handleVerified : undefined}
-            />
-          )}
+          <TwoFactorVerify redirectTo={isOAuthFlow ? oauthRedirectUrl : standardRedirect} />
         </div>
       </div>
     </>
