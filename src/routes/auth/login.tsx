@@ -56,9 +56,9 @@ export default function LoginForm() {
       {
         onSuccess: (ctx) => {
           if (ctx.data.twoFactorRedirect) {
-            if (isOidcFlow()) {
-              sessionStorage.setItem("oauth_redirect_params", window.location.search);
-            }
+            // The twoFactorClient plugin handles the redirect to verify-2fa.
+            // For OAuth flows it preserves the full query string in the URL.
+            // For non-OAuth flows it preserves only the redirect param.
             return;
           }
 
