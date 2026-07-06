@@ -13,11 +13,28 @@ export const authClient = createAuthClient({
       onTwoFactorRedirect() {
         if (typeof window !== "undefined") {
           const params = new URLSearchParams(window.location.search);
-          const redirect = params.get("redirect");
-          const url = redirect
-            ? `/auth/verify-2fa?redirect=${encodeURIComponent(redirect)}`
-            : "/auth/verify-2fa";
-          window.location.replace(url);
+
+          // Check if we're in an OAuth flow (has client_id and redirect_uri)
+          const clientId = params.get("client_id");
+          const redirectUri = params.get("redirect_uri");
+          const isOAuthFlow = Boolean(clientId && redirectUri);
+
+          if (isOAuthFlow) {
+            // Preserve all OAuth parameters through the 2FA verification
+            const oauthParams = new URLSearchParams();
+            for (const [key, value] of params.entries()) {
+              oauthParams.set(key, value);
+            }
+            const url = `/auth/verify-2fa?${oauthParams.toString()}`;
+            window.location.replace(url);
+          } else {
+            // Standard 2FA flow - use redirect param if available
+            const redirect = params.get("redirect");
+            const url = redirect
+              ? `/auth/verify-2fa?redirect=${encodeURIComponent(redirect)}`
+              : "/auth/verify-2fa";
+            window.location.replace(url);
+          }
         }
       },
     }),

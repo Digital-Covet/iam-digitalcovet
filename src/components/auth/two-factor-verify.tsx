@@ -16,7 +16,7 @@ const createEmptyPin = (count: number) =>
   Array.from({ length: count }, () => "");
 
 export default function TwoFactorVerify({
-  redirectTo = "/dashboard",
+  redirectTo,
   onVerified,
 }: TwoFactorVerifyProps) {
   const navigate = useNavigate();
@@ -92,10 +92,12 @@ export default function TwoFactorVerify({
         type: "success",
       });
       onVerified?.();
-      if (redirectTo.startsWith("http")) {
-        window.location.replace(redirectTo);
-      } else {
-        navigate(redirectTo, { replace: true });
+      if (redirectTo) {
+        if (redirectTo.startsWith("http")) {
+          window.location.replace(redirectTo);
+        } else {
+          navigate(redirectTo, { replace: true });
+        }
       }
     } catch (err: unknown) {
       const message =
