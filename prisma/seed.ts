@@ -180,6 +180,7 @@ async function main() {
   });
 
   // ── OAuth Clients (SSO) ──
+  const portfolioRedirectUri = "https://portfolio.digitalcovet.com/api/auth/callback/portfolio";
   const existingClient = await prisma.oauthClient.findUnique({
     where: { clientId: "portfolio" },
   });
@@ -190,7 +191,7 @@ async function main() {
         id: randomUUID(),
         clientId: "portfolio",
         clientSecret: hashClientSecret(process.env.OAUTH_CLIENT_SECRET ?? ""),
-        redirectUris: ["https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio"],
+        redirectUris: [portfolioRedirectUri],
         skipConsent: true,
         enableEndSession: true,
         scopes: ["openid", "profile", "email"],
@@ -203,7 +204,16 @@ async function main() {
     });
     console.log("Created OAuth client: portfolio");
   } else {
-    console.log("OAuth client 'portfolio' already exists, skipping");
+    // Ensure redirect URI is up-to-date
+    if (!existingClient.redirectUris.includes(portfolioRedirectUri)) {
+      await prisma.oauthClient.update({
+        where: { clientId: "portfolio" },
+        data: { redirectUris: [portfolioRedirectUri] },
+      });
+      console.log("Updated OAuth client 'portfolio' redirect URI");
+    } else {
+      console.log("OAuth client 'portfolio' already exists, skipping");
+    }
   }
 
   console.log("Seed complete: 3 roles, auth methods, password policies, OAuth clients");

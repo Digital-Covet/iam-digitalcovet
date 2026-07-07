@@ -7,17 +7,19 @@ import { authToaster, AuthToaster } from "@/components/auth/auth-toaster";
 import { authClient } from "@/lib/auth-client";
 import { pageMetadata } from "@/lib/seo";
 
-const TRUSTED_REDIRECT_ORIGINS = [
-  "https://share.digitalcovet.com",
-  "https://portfolio.digitalcovet.com",
-];
+const ALLOWED_REDIRECTS = new Set([
+  "https://share.digitalcovet.com/dashboard",
+  "https://portfolio.digitalcovet.com/dashboard",
+  "http://localhost:3000/dashboard",
+  "http://localhost:5173/dashboard",
+]);
 
 function sanitizeRedirect(url: string | null): string | null {
   if (!url) return null;
   try {
-    const parsed = new URL(url);
-    if (TRUSTED_REDIRECT_ORIGINS.includes(parsed.origin)) {
-      return parsed.origin + parsed.pathname + parsed.search + parsed.hash;
+    const normalized = new URL(url).href;
+    if (ALLOWED_REDIRECTS.has(normalized)) {
+      return normalized;
     }
   } catch {
     // Not a valid URL — reject

@@ -81,7 +81,15 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/oauth2": {
         window: 60,
-        max: 20,
+        max: 5,
+      },
+      "/oauth2/authorize": {
+        window: 60,
+        max: 5,
+      },
+      "/oauth2/token": {
+        window: 60,
+        max: 10,
       },
     },
   },
