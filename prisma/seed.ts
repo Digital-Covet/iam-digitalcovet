@@ -1,11 +1,7 @@
 import "dotenv/config";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
-
-function hashClientSecret(secret: string): string {
-  return createHash("sha256").update(secret, "utf8").digest("base64url");
-}
 
 const adapter = new PrismaNeon({
   connectionString: process.env.DATABASE_URL!,
@@ -190,7 +186,7 @@ async function main() {
       data: {
         id: randomUUID(),
         clientId: "portfolio",
-        clientSecret: hashClientSecret(process.env.OAUTH_CLIENT_SECRET ?? ""),
+        clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
         redirectUris: [portfolioRedirectUri],
         skipConsent: true,
         enableEndSession: true,
@@ -204,13 +200,23 @@ async function main() {
     });
     console.log("Created OAuth client: portfolio");
   } else {
-    // Ensure redirect URI is up-to-date
+    // Ensure redirect URI and client secret are up-to-date
+    const updates: Record<string, unknown> = {};
     if (!existingClient.redirectUris.includes(portfolioRedirectUri)) {
+      updates.redirectUris = [portfolioRedirectUri];
+    }
+    // Update secret if it looks hashed (base64url encoded, no colons/spaces)
+    const plainSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
+    if (existingClient.clientSecret && !existingClient.clientSecret.includes(":") && existingClient.clientSecret.length > 40) {
+      // Likely a SHA-256 hash — replace with plaintext
+      updates.clientSecret = plainSecret;
+    }
+    if (Object.keys(updates).length > 0) {
       await prisma.oauthClient.update({
         where: { clientId: "portfolio" },
-        data: { redirectUris: [portfolioRedirectUri] },
+        data: updates,
       });
-      console.log("Updated OAuth client 'portfolio' redirect URI");
+      console.log("Updated OAuth client 'portfolio':", Object.keys(updates).join(", "));
     } else {
       console.log("OAuth client 'portfolio' already exists, skipping");
     }
