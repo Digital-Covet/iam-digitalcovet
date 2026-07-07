@@ -97,7 +97,7 @@ export const auth = betterAuth({
       },
     }),
     adminPlugin({
-      defaultRole: "user",
+      defaultRole: "employee",
       adminRole: "admin",
     }),
     organization({
