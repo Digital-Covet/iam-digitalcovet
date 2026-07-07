@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
@@ -8,6 +8,15 @@ const adapter = new PrismaNeon({
 });
 
 const prisma = new PrismaClient({ adapter });
+
+/**
+ * Hash client secret using SHA-256 base64url encoding.
+ * This matches better-auth's default storeClientSecret hashing.
+ */
+function hashClientSecret(secret: string): string {
+  const hash = createHash("sha256").update(secret, "utf8").digest();
+  return Buffer.from(hash).toString("base64url");
+}
 
 async function main() {
   // Clean
@@ -178,6 +187,9 @@ async function main() {
   // ── OAuth Clients (SSO) ──
   const portfolioRedirectUri = "https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio";
   const portfolioDevRedirectUri = "http://localhost:3000/api/auth/oauth2/callback/portfolio";
+  const plainSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
+  const hashedSecret = hashClientSecret(plainSecret);
+
   const existingClient = await prisma.oauthClient.findUnique({
     where: { clientId: "portfolio" },
   });
@@ -187,7 +199,7 @@ async function main() {
       data: {
         id: randomUUID(),
         clientId: "portfolio",
-        clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
+        clientSecret: hashedSecret,
         redirectUris: [portfolioRedirectUri, portfolioDevRedirectUri],
         skipConsent: true,
         enableEndSession: true,
@@ -201,19 +213,15 @@ async function main() {
     });
     console.log("Created OAuth client: portfolio");
   } else {
-    // Ensure redirect URI and client secret are up-to-date
+    // Always update to ensure correct hashed secret and redirect URIs
     const updates: Record<string, unknown> = {};
     const targetUris = [portfolioRedirectUri, portfolioDevRedirectUri];
     const currentUris = existingClient.redirectUris;
     if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
       updates.redirectUris = targetUris;
     }
-    // Update secret if it looks hashed (base64url encoded, no colons/spaces)
-    const plainSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
-    if (existingClient.clientSecret && !existingClient.clientSecret.includes(":") && existingClient.clientSecret.length > 40) {
-      // Likely a SHA-256 hash — replace with plaintext
-      updates.clientSecret = plainSecret;
-    }
+    // Always update the secret to ensure it's properly hashed
+    updates.clientSecret = hashedSecret;
     if (Object.keys(updates).length > 0) {
       await prisma.oauthClient.update({
         where: { clientId: "portfolio" },

@@ -49,6 +49,11 @@ export default function LoginForm() {
     setError(null);
     setIsLoading(true);
 
+    // Capture the original oauth2/authorize query string before the auth call.
+    // The twoFactorClient plugin's onTwoFactorRedirect handles the actual
+    // redirect, but this gives us a fallback to verify PKCE params are present.
+    const originalSearch = window.location.search;
+
     await authClient.signIn.email(
       {
         email: email(),

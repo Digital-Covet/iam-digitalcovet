@@ -7,7 +7,12 @@ export default function Verify2FAPage() {
   const [searchParams] = useSearchParams();
 
   const search = typeof window !== "undefined" ? window.location.search : "";
-  const isOAuthFlow = !!(search && search.includes("client_id=") && search.includes("response_type="));
+  const isOAuthFlow = !!(
+    search &&
+    search.includes("client_id=") &&
+    search.includes("response_type=") &&
+    search.includes("code_challenge=")
+  );
   const oauthRedirectUrl = isOAuthFlow
     ? `${window.location.origin}/api/auth/oauth2/authorize${search}`
     : "";

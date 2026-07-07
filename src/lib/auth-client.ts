@@ -13,7 +13,10 @@ export const authClient = createAuthClient({
       onTwoFactorRedirect() {
         if (typeof window !== "undefined") {
           const url = new URL(window.location.href);
-          const isOAuthFlow = url.searchParams.has("client_id") && url.searchParams.has("response_type");
+          const isOAuthFlow =
+            url.searchParams.has("client_id") &&
+            url.searchParams.has("response_type") &&
+            url.searchParams.has("code_challenge");
           if (isOAuthFlow) {
             window.location.replace(`/auth/verify-2fa${window.location.search}`);
           } else {
