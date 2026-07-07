@@ -3,6 +3,7 @@ import { createMiddleware } from "@solidjs/start/middleware";
 const ALLOWED_ORIGINS = [
   "https://share.digitalcovet.com",
   "https://portfolio.digitalcovet.com",
+  "http://localhost:3000",
   "http://localhost:5173",
 ];
 

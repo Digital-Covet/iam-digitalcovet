@@ -176,7 +176,8 @@ async function main() {
   });
 
   // ── OAuth Clients (SSO) ──
-  const portfolioRedirectUri = "https://portfolio.digitalcovet.com/api/auth/callback/portfolio";
+  const portfolioRedirectUri = "https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio";
+  const portfolioDevRedirectUri = "http://localhost:3000/api/auth/oauth2/callback/portfolio";
   const existingClient = await prisma.oauthClient.findUnique({
     where: { clientId: "portfolio" },
   });
@@ -187,7 +188,7 @@ async function main() {
         id: randomUUID(),
         clientId: "portfolio",
         clientSecret: process.env.OAUTH_CLIENT_SECRET ?? "",
-        redirectUris: [portfolioRedirectUri],
+        redirectUris: [portfolioRedirectUri, portfolioDevRedirectUri],
         skipConsent: true,
         enableEndSession: true,
         scopes: ["openid", "profile", "email"],
@@ -202,8 +203,10 @@ async function main() {
   } else {
     // Ensure redirect URI and client secret are up-to-date
     const updates: Record<string, unknown> = {};
-    if (!existingClient.redirectUris.includes(portfolioRedirectUri)) {
-      updates.redirectUris = [portfolioRedirectUri];
+    const targetUris = [portfolioRedirectUri, portfolioDevRedirectUri];
+    const currentUris = existingClient.redirectUris;
+    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+      updates.redirectUris = targetUris;
     }
     // Update secret if it looks hashed (base64url encoded, no colons/spaces)
     const plainSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
