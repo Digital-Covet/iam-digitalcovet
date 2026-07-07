@@ -72,7 +72,19 @@ export const auth = betterAuth({
       },
     },
   },
-  advanced: {},
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["x-forwarded-for", "x-real-ip", "x-client-ip"],
+    },
+  },
+  rateLimit: {
+    customRules: {
+      "/sign-in/oauth2": {
+        window: 60,
+        max: 20,
+      },
+    },
+  },
   trustedOrigins: [
     "https://share.digitalcovet.com",
     "https://portfolio.digitalcovet.com",
