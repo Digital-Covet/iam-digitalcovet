@@ -233,6 +233,52 @@ async function main() {
     }
   }
 
+  const shareRedirectUri = "https://share.digitalcovet.com/api/auth/oauth2/callback/share";
+  const shareDevRedirectUri = "http://localhost:5173/api/auth/oauth2/callback/share";
+  const sharePlainSecret = process.env.OAUTH_CLIENT_SECRET_SHARE ?? "";
+  const shareHashedSecret = hashClientSecret(sharePlainSecret);
+
+  const existingShareClient = await prisma.oauthClient.findUnique({
+    where: { clientId: "share" },
+  });
+
+  if (!existingShareClient) {
+    await prisma.oauthClient.create({
+      data: {
+        id: randomUUID(),
+        clientId: "share",
+        clientSecret: shareHashedSecret,
+        redirectUris: [shareRedirectUri, shareDevRedirectUri],
+        skipConsent: true,
+        enableEndSession: true,
+        scopes: ["openid", "profile", "email"],
+        grantTypes: ["authorization_code", "refresh_token"],
+        responseTypes: ["code"],
+        tokenEndpointAuthMethod: "client_secret_post",
+        name: "Digital Covet Share",
+        uri: "https://share.digitalcovet.com",
+      },
+    });
+    console.log("Created OAuth client: share");
+  } else {
+    const updates: Record<string, unknown> = {};
+    const targetUris = [shareRedirectUri, shareDevRedirectUri];
+    const currentUris = existingShareClient.redirectUris;
+    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+      updates.redirectUris = targetUris;
+    }
+    updates.clientSecret = shareHashedSecret;
+    if (Object.keys(updates).length > 0) {
+      await prisma.oauthClient.update({
+        where: { clientId: "share" },
+        data: updates,
+      });
+      console.log("Updated OAuth client 'share':", Object.keys(updates).join(", "));
+    } else {
+      console.log("OAuth client 'share' already exists, skipping");
+    }
+  }
+
   console.log("Seed complete: 3 roles, auth methods, password policies, OAuth clients");
 }
 

@@ -13,10 +13,13 @@ const storeBackupCodes =
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: {
-    allowedHosts: ["iam.digitalcovet.com", "share.digitalcovet.com", "portfolio.digitalcovet.com", "localhost:5173"],
-    protocol: process.env.NODE_ENV === "production" ? "https" : "http",
-  },
+  baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === "production" ? "https://iam.digitalcovet.com" : "http://localhost:5173"),
+  trustedOrigins: [
+    "https://iam.digitalcovet.com",
+    "https://share.digitalcovet.com",
+    "https://portfolio.digitalcovet.com",
+    "http://localhost:5173",
+  ],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
