@@ -96,10 +96,6 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [
-    "https://share.digitalcovet.com",
-    "https://portfolio.digitalcovet.com",
-  ],
   plugins: [
     twoFactor({
       issuer: "digitalcovet",
