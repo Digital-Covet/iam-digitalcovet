@@ -1,6 +1,7 @@
 import { createMiddleware } from "@solidjs/start/middleware";
 
 const ALLOWED_ORIGINS = [
+  "https://iam.digitalcovet.com",
   "https://share.digitalcovet.com",
   "https://portfolio.digitalcovet.com",
   "http://localhost:3000",
@@ -31,7 +32,6 @@ function isAllowedOrigin(origin: string | null): boolean {
 
 function isSameOriginRequest(request: Request): boolean {
   const origin = request.headers.get("Origin");
-  // Same-origin requests don't send Origin header
   if (!origin) return true;
   try {
     const requestOrigin = new URL(request.url).origin;
@@ -55,8 +55,8 @@ export default createMiddleware({
       return;
     }
 
-    // Allow same-origin requests (no Origin header)
-    if (!origin && isSameOriginRequest(request)) {
+    // Allow same-origin requests
+    if (isSameOriginRequest(request)) {
       if (request.method === "OPTIONS") {
         return new Response(null, { status: 204 });
       }
@@ -76,7 +76,9 @@ export default createMiddleware({
     // Handle preflight
     if (request.method === "OPTIONS") {
       const headers = new Headers();
-      applyCorsHeaders(headers, origin);
+      if (origin) {
+        applyCorsHeaders(headers, origin);
+      }
       return new Response(null, { status: 204, headers });
     }
   },
@@ -90,7 +92,7 @@ export default createMiddleware({
     }
 
     // Add CORS headers for allowed origins
-    if (isAllowedOrigin(origin)) {
+    if (isAllowedOrigin(origin) && origin) {
       applyCorsHeaders(response.headers, origin);
     }
   },
