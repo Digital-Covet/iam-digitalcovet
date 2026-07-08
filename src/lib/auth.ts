@@ -1,12 +1,14 @@
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { createAuthMiddleware, APIError } from "better-auth/api";
 import { admin as adminPlugin, emailOTP, jwt, organization, twoFactor } from "better-auth/plugins";
 import { oauthProvider } from "@better-auth/oauth-provider";
 import { prisma } from "@/db";
 import { sendEmail } from "@/services/email";
 import { renderDeleteVerificationEmail } from "@/services/email-templates";
 import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
+import { createAuditLog } from "./audit";
 
 const storeBackupCodes =
   process.env.NODE_ENV === "development" ? "plain" : "encrypted";
@@ -95,6 +97,57 @@ export const auth = betterAuth({
         max: 10,
       },
     },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      const request = ctx.request;
+      if (!request) return;
+
+      const returned = ctx.context.returned;
+      const isError = returned instanceof APIError;
+
+      if (ctx.path === "/sign-in/email") {
+        const user = isError ? undefined : ctx.context.newSession?.user;
+        ctx.context.runInBackground(
+          createAuditLog({
+            event: isError ? "failed_login" : "session_initiated",
+            status: isError ? "failed" : "success",
+            request,
+            user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
+          }),
+        );
+      }
+
+      if (ctx.path === "/sign-in/two-factor") {
+        const user = isError ? undefined : ctx.context.newSession?.user;
+        ctx.context.runInBackground(
+          createAuditLog({
+            event: isError ? "failed_login" : "session_initiated",
+            status: isError ? "failed" : "success",
+            request,
+            user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
+          }),
+        );
+      }
+
+      if (ctx.path === "/oauth2/token" && !isError) {
+        const body = ctx.body as Record<string, string> | undefined;
+        const clientId = body?.client_id;
+        const targetApp =
+          clientId === "share" ? "share" :
+          clientId === "portfolio" ? "portfolio" :
+          undefined;
+
+        ctx.context.runInBackground(
+          createAuditLog({
+            event: "token_renewed",
+            status: "success",
+            request,
+            targetApp,
+          }),
+        );
+      }
+    }),
   },
   plugins: [
     twoFactor({
