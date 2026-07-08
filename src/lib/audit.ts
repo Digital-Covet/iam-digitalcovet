@@ -1,7 +1,8 @@
 import { prisma } from "@/db";
 import type { AuditLogEvent, AuditLogTargetApp, AuditLogStatus } from "@generated/prisma/client";
 
-function getClientIp(request: Request): string | null {
+function getClientIp(request: Request | undefined): string | null {
+  if (!request) return null;
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
@@ -9,7 +10,8 @@ function getClientIp(request: Request): string | null {
   return request.headers.get("x-real-ip") ?? request.headers.get("x-client-ip") ?? null;
 }
 
-function detectTargetApp(request: Request): AuditLogTargetApp {
+function detectTargetApp(request: Request | undefined): AuditLogTargetApp {
+  if (!request) return "iam_system";
   const origin = request.headers.get("origin") ?? request.headers.get("referer") ?? "";
   if (origin.includes("share.digitalcovet.com")) return "share";
   if (origin.includes("portfolio.digitalcovet.com")) return "portfolio";
@@ -28,7 +30,7 @@ function getInitials(name: string): string {
 interface CreateAuditLogParams {
   event: AuditLogEvent;
   status: AuditLogStatus;
-  request: Request;
+  request?: Request;
   user?: {
     id?: string;
     name?: string;

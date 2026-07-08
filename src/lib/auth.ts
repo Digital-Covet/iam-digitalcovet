@@ -100,31 +100,39 @@ export const auth = betterAuth({
   },
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      const request = ctx.request;
-      if (!request) return;
-
       const returned = ctx.context.returned;
       const isError = returned instanceof APIError;
 
       if (ctx.path === "/sign-in/email") {
-        const user = isError ? undefined : ctx.context.newSession?.user;
+        const session = isError ? undefined : ctx.context.newSession;
+        const user = session?.user;
+        console.log("[Audit] /sign-in/email", {
+          isError,
+          hasSession: !!session,
+          hasUser: !!user,
+          userId: user?.id,
+          userName: user?.name,
+          userEmail: user?.email,
+          hasRequest: !!ctx.request,
+        });
         ctx.context.runInBackground(
           createAuditLog({
             event: isError ? "failed_login" : "session_initiated",
             status: isError ? "failed" : "success",
-            request,
+            request: ctx.request,
             user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
           }),
         );
       }
 
       if (ctx.path === "/sign-in/two-factor") {
-        const user = isError ? undefined : ctx.context.newSession?.user;
+        const session = isError ? undefined : ctx.context.newSession;
+        const user = session?.user;
         ctx.context.runInBackground(
           createAuditLog({
             event: isError ? "failed_login" : "session_initiated",
             status: isError ? "failed" : "success",
-            request,
+            request: ctx.request,
             user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
           }),
         );
@@ -138,11 +146,17 @@ export const auth = betterAuth({
           clientId === "portfolio" ? "portfolio" :
           undefined;
 
+        console.log("[Audit] /oauth2/token", {
+          clientId,
+          targetApp,
+          hasRequest: !!ctx.request,
+        });
+
         ctx.context.runInBackground(
           createAuditLog({
             event: "token_renewed",
             status: "success",
-            request,
+            request: ctx.request,
             targetApp,
           }),
         );
