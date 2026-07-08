@@ -13,48 +13,54 @@ const adapter = new PrismaNeon({
 
 const prisma = new PrismaClient({ adapter });
 
+async function patchClient(clientId, rawSecret) {
+  const hashedSecret = hashClientSecret(rawSecret);
+
+  const client = await prisma.oauthClient.findUnique({
+    where: { clientId },
+  });
+
+  if (!client) {
+    console.error(`OAuth client '${clientId}' not found in database`);
+    return false;
+  }
+
+  if (client.clientSecret === hashedSecret) {
+    console.log(`'${clientId}' secret already correct — skipping.`);
+    return true;
+  }
+
+  await prisma.oauthClient.update({
+    where: { clientId },
+    data: { clientSecret: hashedSecret },
+  });
+
+  const verify = await prisma.oauthClient.findUnique({
+    where: { clientId },
+    select: { clientSecret: true },
+  });
+  console.log(`Updated '${clientId}' secret. Verified: ${verify.clientSecret}`);
+  return true;
+}
+
 async function main() {
-  const rawSecret = process.env.OAUTH_CLIENT_SECRET;
-  if (!rawSecret) {
+  const portfolioSecret = process.env.OAUTH_CLIENT_SECRET;
+  if (!portfolioSecret) {
     console.error("OAUTH_CLIENT_SECRET env var is not set");
     process.exit(1);
   }
 
-  const hashedSecret = hashClientSecret(rawSecret);
-
-  console.log("Raw secret length:", rawSecret.length);
-  console.log("Hashed secret (base64url):", hashedSecret);
-  console.log("Hashed secret length:", hashedSecret.length);
-
-  const client = await prisma.oauthClient.findUnique({
-    where: { clientId: "portfolio" },
-  });
-
-  if (!client) {
-    console.error("OAuth client 'portfolio' not found in database");
+  const shareSecret = process.env.OAUTH_CLIENT_SECRET_SHARE;
+  if (!shareSecret) {
+    console.error("OAUTH_CLIENT_SECRET_SHARE env var is not set");
     process.exit(1);
   }
 
-  console.log("\nCurrent DB clientSecret:", client.clientSecret);
-  console.log("Current DB clientSecret length:", client.clientSecret.length);
+  console.log("=== Portfolio client ===");
+  await patchClient("portfolio", portfolioSecret);
 
-  if (client.clientSecret === hashedSecret) {
-    console.log("\nClient secret is already correctly hashed. No changes needed.");
-    return;
-  }
-
-  await prisma.oauthClient.update({
-    where: { clientId: "portfolio" },
-    data: { clientSecret: hashedSecret },
-  });
-
-  console.log("\nUpdated portfolio client secret to hashed value.");
-
-  const verify = await prisma.oauthClient.findUnique({
-    where: { clientId: "portfolio" },
-    select: { clientSecret: true },
-  });
-  console.log("Verified new DB clientSecret:", verify.clientSecret);
+  console.log("\n=== Share client ===");
+  await patchClient("share", shareSecret);
 }
 
 main()

@@ -145,6 +145,7 @@ export const auth = betterAuth({
       consentPage: "/consent",
       scopes: ["openid", "profile", "email", "offline_access"],
       cachedTrustedClients: new Set(["share", "portfolio"]),
+      storeClientSecret: "hashed",
     }),
   ],
 });
