@@ -47,6 +47,9 @@ export const POST = async (event: any) => {
       codeVerifierLength: body.code_verifier?.length,
       hasClientSecret: !!body.client_secret,
     });
+
+    // TEMPORARY VERBOSE LOGGING (EXPOSES secrets): log full request body for debugging
+    console.log("[IAM] Token exchange request full body:", body);
   }
 
   try {
