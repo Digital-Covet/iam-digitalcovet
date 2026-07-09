@@ -26,6 +26,7 @@ export default function TwoFactorVerify({
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const [cooldown, setCooldown] = createSignal(0);
+  let hiddenInputRef: HTMLInputElement | undefined;
 
   createEffect(() => {
     const remaining = cooldown();
@@ -37,6 +38,25 @@ export default function TwoFactorVerify({
 
     onCleanup(() => window.clearTimeout(timer));
   });
+
+  createEffect(() => {
+    if (hiddenInputRef && isTotp()) {
+      hiddenInputRef.value = code();
+    }
+  });
+
+  const handleHiddenInput = (e: InputEvent) => {
+    const target = e.currentTarget as HTMLInputElement;
+    const value = target.value.replace(/\D/g, "").slice(0, 6);
+    target.value = value;
+    setCode(value);
+    const pin = createEmptyPin(6);
+    for (let i = 0; i < Math.min(value.length, 6); i++) {
+      pin[i] = value[i];
+    }
+    setPinValue(pin);
+    setError(null);
+  };
 
   const clearCode = () => {
     setCode("");
@@ -132,32 +152,47 @@ export default function TwoFactorVerify({
               {isTotp() ? "Authenticator code" : "Backup code"}
             </Field.Label>
             {isTotp() ? (
-              <PinInput.Root
-                value={pinValue()}
-                onValueChange={({ value }) => {
-                  setPinValue(value);
-                  setCode(value.join(""));
-                  setError(null);
-                }}
-                count={6}
-                otp
-                type="numeric"
-                disabled={disabled()}
-                invalid={error() !== null}
-                aria-label="Authenticator code"
-              >
-                <PinInput.Control class="flex justify-center gap-2">
-                  <For each={Array.from({ length: 6 }, (_, index) => index)}>
-                    {(index) => (
-                      <PinInput.Input
-                        index={index}
-                        class="h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-semibold shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                    )}
-                  </For>
-                </PinInput.Control>
-                <PinInput.HiddenInput />
-              </PinInput.Root>
+              <>
+                <input
+                  ref={hiddenInputRef}
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  name="otp"
+                  value={code()}
+                  onInput={handleHiddenInput}
+                  disabled={disabled()}
+                  class="sr-only"
+                  aria-hidden="true"
+                  tabindex={-1}
+                />
+                <PinInput.Root
+                  value={pinValue()}
+                  onValueChange={({ value }) => {
+                    setPinValue(value);
+                    setCode(value.join(""));
+                    setError(null);
+                  }}
+                  count={6}
+                  otp
+                  type="numeric"
+                  disabled={disabled()}
+                  invalid={error() !== null}
+                  aria-label="Authenticator code"
+                >
+                  <PinInput.Control class="flex justify-center gap-2">
+                    <For each={Array.from({ length: 6 }, (_, index) => index)}>
+                      {(index) => (
+                        <PinInput.Input
+                          index={index}
+                          class="h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-semibold shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                      )}
+                    </For>
+                  </PinInput.Control>
+                  <PinInput.HiddenInput />
+                </PinInput.Root>
+              </>
             ) : (
               <Field.Input
                 id="code"
