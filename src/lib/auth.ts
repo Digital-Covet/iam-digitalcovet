@@ -203,8 +203,14 @@ export const auth = betterAuth({
       },
     }),
     adminPlugin({
+      ac,
+      roles: {
+        superadmin: superadminRole,
+        admin: adminRole,
+        employee: employeeRole,
+      },
       defaultRole: "employee",
-      adminRole: "admin",
+      adminRoles: ["superadmin", "admin"],
     }),
     organization({
       allowUserToCreateOrganization: false,

@@ -78,7 +78,7 @@ const inviteUser = async (payload: InviteUserPayload) => {
     body: {
       email: payload.email,
       name: `${payload.firstName} ${payload.lastName}`,
-      role: (roleMap[payload.role] ?? "employee") as "user" | "admin",
+      role: (roleMap[payload.role] ?? "employee") as "superadmin" | "admin" | "employee",
       data: {
         appAccess,
         twoFactorEnabled: payload.requireMfa,
