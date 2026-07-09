@@ -15,16 +15,16 @@ function decodeIfNeeded(value: string): string {
 export function resolveAvatarUrl(raw: string | null | undefined): string | undefined {
   if (!raw) return undefined;
 
-  let key = decodeIfNeeded(raw);
-
-  if (key.startsWith("http://") || key.startsWith("https://")) {
+  if (raw.startsWith("http://") || raw.startsWith("https://")) {
     try {
-      const url = new URL(key);
-      key = url.searchParams.get("key") ?? key;
+      const url = new URL(raw);
+      if (url.hostname === "portfolio.digitalcovet.com") return raw;
+      const key = url.searchParams.get("key");
+      return key ? `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${decodeIfNeeded(key)}` : raw;
     } catch {
       return raw;
     }
   }
 
-  return `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${key}`;
+  return `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${decodeIfNeeded(raw)}`;
 }
