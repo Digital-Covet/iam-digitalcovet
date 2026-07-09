@@ -1,93 +1,73 @@
 import type { Component } from "solid-js";
-import { Show } from "solid-js";
-import { query, createAsync, type RouteDefinition, useNavigate } from "@solidjs/router";
+import { Show, createSignal, onMount } from "solid-js";
 import { Settings } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
 import ProfileCard from "@/components/account-settings/ProfileCard";
 import SecurityCard from "@/components/account-settings/SecurityCard";
 import ActiveSessionsList from "@/components/account-settings/ActiveSessionsList";
-import type { AccountSettingsData, UserProfile } from "@/types";
-import { prisma } from "@/db";
-
-const getAccountData = query(async () => {
-  "use server";
-  const { auth } = await import("@/lib/auth");
-
-  const session = await auth.api.getSession({
-    headers: new Headers(),
-  });
-
-  if (!session?.user) {
-    return null;
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      sessions: {
-        where: { expiresAt: { gt: new Date() } },
-        orderBy: { createdAt: "desc" },
-      },
-    },
-  });
-
-  if (!user) {
-    return null;
-  }
-
-  const activeSessions = user.sessions.map((s) => {
-    const ua = s.userAgent ?? "";
-    const deviceMatch = ua.match(/\(([^)]+)\)/);
-    const device = deviceMatch ? deviceMatch[1].split(";")[0] : "Unknown Device";
-    const browserMatch = ua.match(/(Chrome|Firefox|Safari|Edge|Opera|Arc)\/[\d.]+/);
-    const browser = browserMatch ? browserMatch[0] : "Unknown Browser";
-
-    return {
-      id: s.id,
-      userName: user.name,
-      userEmail: user.email,
-      userInitials: user.initials ?? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-      userAvatarUrl: user.image ?? undefined,
-      device,
-      browser,
-      ipAddress: s.ipAddress ?? "N/A",
-      location: s.location ?? "Unknown",
-      loginTime: s.createdAt.toISOString(),
-      lastActivity: s.lastActivity?.toISOString() ?? s.createdAt.toISOString(),
-      isCurrent: s.token === session.session?.token,
-    };
-  });
-
-  const roleLabels: Record<string, string> = {
-    employee: "Employee",
-    admin: "Admin",
-    superadmin: "SuperAdmin",
-  };
-
-  return {
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      initials: user.initials ?? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-      role: (roleLabels[user.role] ?? user.role) as UserProfile["role"],
-      department: user.departmentId,
-      avatarUrl: user.image,
-      twoFactorEnabled: user.twoFactorEnabled ?? false,
-      createdAt: user.createdAt.toISOString(),
-    },
-    activeSessions,
-  };
-}, "accountData");
-
-export const route = {
-  preload: () => getAccountData(),
-} satisfies RouteDefinition;
+import type { UserProfile, ActiveSession } from "@/types";
+import { authClient } from "@/lib/auth-client";
 
 const AccountSettingsPage: Component = () => {
-  const data = createAsync(() => getAccountData());
-  const navigate = useNavigate();
+  const [loading, setLoading] = createSignal(true);
+  const [user, setUser] = createSignal<UserProfile | null>(null);
+  const [sessions, setSessions] = createSignal<ActiveSession[]>([]);
+
+  onMount(() => {
+    void loadData();
+  });
+
+  const loadData = async () => {
+    try {
+      console.log("[AccountSettings] Fetching session...");
+      const sessionResult = await Promise.race([
+        authClient.getSession(),
+        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("Session timeout")), 10000)),
+      ]);
+      
+      const session = sessionResult?.data?.session;
+      console.log("[AccountSettings] Session result:", { hasSession: !!session, userId: session?.userId });
+
+      if (!session?.userId) {
+        setLoading(false);
+        return;
+      }
+
+      const userData = await fetchUser(session.userId);
+      console.log("[AccountSettings] User data:", { hasUser: !!userData?.user });
+      
+      if (userData) {
+        setUser(userData.user);
+        setSessions(userData.sessions);
+      }
+    } catch (error) {
+      console.error("[AccountSettings] Failed to load account data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUser = async (userId: string) => {
+    try {
+      console.log("[AccountSettings] Fetching user data for userId:", userId);
+      const response = await fetch("/api/account-settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      console.log("[AccountSettings] API response status:", response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[AccountSettings] API error:", errorText);
+        return null;
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("[AccountSettings] Fetch error:", error);
+      return null;
+    }
+  };
 
   return (
     <AuthGuard>
@@ -108,21 +88,26 @@ const AccountSettingsPage: Component = () => {
           </div>
         </div>
 
-        <Show when={data()} fallback={<div class="text-muted-foreground">Loading...</div>}>
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <ProfileCard user={data()!.user} />
-            <SecurityCard
-              twoFactorEnabled={data()!.user.twoFactorEnabled}
-              userId={data()!.user.id}
-            />
-          </div>
+        <Show when={!loading()} fallback={<div class="text-muted-foreground">Loading...</div>}>
+          <Show when={user()}>
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <ProfileCard user={user()!} />
+              <SecurityCard
+                twoFactorEnabled={user()!.twoFactorEnabled}
+                userId={user()!.id}
+              />
+            </div>
 
-          <div class="mt-6">
-            <ActiveSessionsList
-              sessions={data()!.activeSessions}
-              currentSessionId={data()!.activeSessions.find((s) => s.isCurrent)?.id}
-            />
-          </div>
+            <div class="mt-6">
+              <ActiveSessionsList
+                sessions={sessions()}
+                currentSessionId={sessions().find((s) => s.isCurrent)?.id}
+              />
+            </div>
+          </Show>
+          <Show when={!user()}>
+            <div class="text-muted-foreground">Unable to load account data.</div>
+          </Show>
         </Show>
       </AppLayout>
     </AuthGuard>
