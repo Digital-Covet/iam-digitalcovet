@@ -133,3 +133,22 @@ export interface AppItem {
   icon: Icon;
   accessKey: AppAccess;
 }
+
+/* ─── Account Settings Types ─── */
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  initials: string;
+  role: UserRole;
+  department: string | null;
+  avatarUrl: string | null;
+  twoFactorEnabled: boolean;
+  createdAt: string;
+}
+
+export interface AccountSettingsData {
+  user: UserProfile;
+  activeSessions: ActiveSession[];
+}
