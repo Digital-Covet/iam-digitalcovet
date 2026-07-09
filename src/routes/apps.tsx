@@ -7,7 +7,8 @@ import AuthGuard from "@/components/auth/auth-guard";
 import AppCard from "@/components/apps/AppCard";
 import type { AppItem, AppAccess } from "@/types";
 import { prisma } from "@/db";
-import { authClient } from "@/lib/auth-client";
+import { auth } from "@/lib/auth";
+import { getRequestEvent } from "solid-js/web";
 
 const apps: AppItem[] = [
   {
@@ -32,11 +33,17 @@ const elevatedRoles = new Set(["superadmin", "admin"]);
 
 const getUserAccess = query(async () => {
   "use server";
-  const session = await authClient.getSession();
-  if (!session?.data?.user?.id) return { apps: [] as AppAccess[], elevated: false };
+  const event = getRequestEvent();
+  if (!event) return { apps: [] as AppAccess[], elevated: false };
+
+  const session = await auth.api.getSession({
+    headers: event.request.headers,
+  });
+
+  if (!session?.user?.id) return { apps: [] as AppAccess[], elevated: false };
 
   const user = await prisma.user.findUnique({
-    where: { id: session.data.user.id },
+    where: { id: session.user.id },
     select: { appAccess: true, role: true },
   });
 
