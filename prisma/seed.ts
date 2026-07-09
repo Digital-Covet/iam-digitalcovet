@@ -233,6 +233,10 @@ async function main() {
     if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
       updates.postLogoutRedirectUris = targetLogoutUris;
     }
+    // Ensure enableEndSession is true for RP-initiated logout
+    if (!existingClient.enableEndSession) {
+      updates.enableEndSession = true;
+    }
     // Always update the secret to ensure it's properly hashed
     updates.clientSecret = hashedSecret;
     if (Object.keys(updates).length > 0) {
@@ -292,6 +296,10 @@ async function main() {
     const currentLogoutUris = existingShareClient.postLogoutRedirectUris ?? [];
     if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
       updates.postLogoutRedirectUris = targetLogoutUris;
+    }
+    // Ensure enableEndSession is true for RP-initiated logout
+    if (!existingShareClient.enableEndSession) {
+      updates.enableEndSession = true;
     }
     updates.clientSecret = shareHashedSecret;
     if (Object.keys(updates).length > 0) {
