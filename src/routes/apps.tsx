@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import { For, Show, createResource } from "solid-js";
+import { For } from "solid-js";
 import { query, createAsync, type RouteDefinition } from "@solidjs/router";
 import { AppWindow, Folder, Share2 } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
@@ -28,17 +28,26 @@ const apps: AppItem[] = [
   },
 ];
 
+const elevatedRoles = new Set(["superadmin", "admin"]);
+
 const getUserAccess = query(async () => {
   "use server";
   const session = await authClient.getSession();
-  if (!session?.data?.user?.id) return [];
+  if (!session?.data?.user?.id) return { apps: [] as AppAccess[], elevated: false };
 
   const user = await prisma.user.findUnique({
     where: { id: session.data.user.id },
-    select: { appAccess: true },
+    select: { appAccess: true, role: true },
   });
 
-  return (user?.appAccess ?? []) as AppAccess[];
+  if (!user) return { apps: [] as AppAccess[], elevated: false };
+
+  const isElevated = elevatedRoles.has(user.role);
+  const apps = isElevated
+    ? (["Share", "Portfolio"] as AppAccess[])
+    : ((user.appAccess ?? []) as AppAccess[]);
+
+  return { apps, elevated: isElevated };
 }, "userAppAccess");
 
 export const route = {
@@ -46,11 +55,11 @@ export const route = {
 } satisfies RouteDefinition;
 
 const AppsPage: Component = () => {
-  const userAccess = createAsync(() => getUserAccess());
+  const accessData = createAsync(() => getUserAccess());
 
   const hasAccess = (accessKey: AppAccess) => {
-    const access = userAccess();
-    return access ? access.includes(accessKey) : false;
+    const data = accessData();
+    return data ? data.apps.includes(accessKey) : false;
   };
 
   return (
