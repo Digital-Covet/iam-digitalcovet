@@ -21,7 +21,10 @@ interface UserRowProps {
 }
 
 const UserRow: Component<UserRowProps> = (props) => (
-  <tr class="h-12 transition-colors hover:bg-muted/50">
+  <tr
+    class="h-12 transition-colors hover:bg-muted/50"
+    classList={{ "bg-destructive/5": props.user.banned }}
+  >
     <td class="px-4 py-2">
       <div class="flex items-center">
         <Avatar.Root
@@ -33,7 +36,14 @@ const UserRow: Component<UserRowProps> = (props) => (
           </Avatar.Fallback>
         </Avatar.Root>
         <div>
-          <div class="font-medium">{props.user.name}</div>
+          <div class="flex items-center gap-2">
+            <span class="font-medium">{props.user.name}</span>
+            {props.user.banned && (
+              <span class="inline-flex items-center rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-destructive">
+                Banned
+              </span>
+            )}
+          </div>
           <div class="text-xs text-muted-foreground">{props.user.email}</div>
         </div>
       </div>
@@ -65,11 +75,11 @@ const UserRow: Component<UserRowProps> = (props) => (
               Edit
             </Menu.Item>
             <Menu.Item
-              value="disable"
+              value="ban"
               onSelect={() => (props.user.banned ? props.onEnable(props.user) : props.onDisable(props.user))}
               class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
             >
-              {props.user.banned ? "Enable" : "Disable"}
+              {props.user.banned ? "Unban" : "Ban"}
             </Menu.Item>
             <Menu.Separator class="my-1 h-px bg-border" />
             <Menu.Item
