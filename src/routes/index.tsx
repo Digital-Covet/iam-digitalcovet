@@ -114,8 +114,6 @@ const editUser = async (userId: string, payload: EditUserPayload) => {
     },
     headers: event.request.headers,
   });
-
-  await revalidate("users");
 };
 
 const disableUser = async (userId: string) => {
@@ -127,7 +125,6 @@ const disableUser = async (userId: string) => {
     body: { userId, banReason: "Disabled by administrator" },
     headers: event.request.headers,
   });
-  await revalidate("users");
 };
 
 const enableUser = async (userId: string) => {
@@ -139,7 +136,6 @@ const enableUser = async (userId: string) => {
     body: { userId },
     headers: event.request.headers,
   });
-  await revalidate("users");
 };
 
 const deleteUser = async (userId: string) => {
@@ -151,7 +147,6 @@ const deleteUser = async (userId: string) => {
     body: { userId },
     headers: event.request.headers,
   });
-  await revalidate("users");
 };
 
 export const route = {
@@ -185,10 +180,12 @@ const App: Component = () => {
 
   const handleDisable = async (user: DirectoryUser) => {
     await disableUser(user.id);
+    revalidate("users");
   };
 
   const handleEnable = async (user: DirectoryUser) => {
     await enableUser(user.id);
+    revalidate("users");
   };
 
   const handleDeleteClick = (user: DirectoryUser) => {
@@ -200,6 +197,7 @@ const App: Component = () => {
     const user = deletingUser();
     if (user) {
       await deleteUser(user.id);
+      revalidate("users");
       setDeleteDialogOpen(false);
       setDeletingUser(null);
     }
@@ -233,6 +231,7 @@ const App: Component = () => {
           onOpenChange={setEditDrawerOpen}
           user={editingUser()}
           onSubmit={editUser}
+          onSuccess={() => revalidate("users")}
         />
         <DeleteUserDialog
           open={deleteDialogOpen()}

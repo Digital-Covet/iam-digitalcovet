@@ -21,6 +21,7 @@ interface EditUserDrawerProps {
   onOpenChange: (open: boolean) => void;
   user: DirectoryUser | null;
   onSubmit?: (userId: string, payload: EditUserPayload) => void;
+  onSuccess?: () => void;
 }
 
 const inputClass =
@@ -75,11 +76,11 @@ const EditUserDrawer: Component<EditUserDrawerProps> = (props) => {
     }
   });
 
-  const handleSubmit = (e: SubmitEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     const user = props.user;
     if (!user) return;
-    props.onSubmit?.(user.id, {
+    await props.onSubmit?.(user.id, {
       firstName: firstName(),
       lastName: lastName(),
       email: email(),
@@ -88,6 +89,7 @@ const EditUserDrawer: Component<EditUserDrawerProps> = (props) => {
       role: role(),
       requireMfa: requireMfa(),
     });
+    props.onSuccess?.();
     props.onOpenChange(false);
   };
 
