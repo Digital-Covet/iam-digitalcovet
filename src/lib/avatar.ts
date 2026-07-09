@@ -12,19 +12,28 @@ function decodeIfNeeded(value: string): string {
   return value;
 }
 
-export function resolveAvatarUrl(raw: string | null | undefined): string | undefined {
-  if (!raw) return undefined;
+function extractKey(raw: string): string {
+  const decoded = decodeIfNeeded(raw);
 
-  if (raw.startsWith("http://") || raw.startsWith("https://")) {
+  if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
     try {
-      const url = new URL(raw);
-      if (url.hostname === "portfolio.digitalcovet.com") return raw;
-      const key = url.searchParams.get("key");
-      return key ? `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${decodeIfNeeded(key)}` : raw;
+      const url = new URL(decoded);
+      return url.searchParams.get("key") ?? decoded;
     } catch {
-      return raw;
+      return decoded;
     }
   }
 
-  return `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${decodeIfNeeded(raw)}`;
+  if (decoded.startsWith("/api/public/file")) {
+    const idx = decoded.indexOf("?key=");
+    return idx !== -1 ? decoded.slice(idx + 5) : decoded;
+  }
+
+  return decoded;
+}
+
+export function resolveAvatarUrl(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined;
+  const key = extractKey(raw);
+  return `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${key}`;
 }
