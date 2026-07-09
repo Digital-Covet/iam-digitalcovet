@@ -1,6 +1,6 @@
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
-import { query, createAsync, type RouteDefinition } from "@solidjs/router";
+import { A, query, createAsync, type RouteDefinition } from "@solidjs/router";
 import { Settings2, ShieldCheck, ShieldHalf, Activity, Lock, Globe } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
@@ -231,12 +231,14 @@ const AuthenticationPage: Component = () => {
       </section>
 
       {/* ─── Password Policy ─── */}
-      <section class="mb-6">
-        <PasswordPolicyCard
-          policies={policies()}
-          onToggle={handlePolicyToggle}
-        />
-      </section>
+      <A href="/auth-settings/password-policy" class="block">
+        <section class="mb-6 rounded-xl transition-shadow hover:ring-2 hover:ring-primary/20">
+          <PasswordPolicyCard
+            policies={policies()}
+            onToggle={handlePolicyToggle}
+          />
+        </section>
+      </A>
 
       {/* ─── Active Sessions ─── */}
       <section>
