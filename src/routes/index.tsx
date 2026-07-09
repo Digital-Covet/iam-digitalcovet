@@ -8,8 +8,10 @@ import PageHeader from "@/components/user-directory/PageHeader";
 import StatCard from "@/components/user-directory/StatCard";
 import UsersTable from "@/components/user-directory/UsersTable";
 import InviteUserDrawer from "@/components/user-directory/InviteUserDrawer";
-import type { DirectoryUser, StatCardData } from "@/types";
+import type { InviteUserPayload } from "@/components/user-directory/InviteUserDrawer";
+import type { AppAccess, StatCardData } from "@/types";
 import { prisma } from "@/db";
+import { auth } from "@/lib/auth";
 
 const getUsers = query(async () => {
   "use server";
@@ -54,6 +56,31 @@ const getStats = query(async () => {
   return { totalUsers, pendingInvites, twoFAAdoption: `${twoFAAdoption}%`, activeSessions };
 }, "userStats");
 
+const inviteUser = async (payload: InviteUserPayload) => {
+  "use server";
+  const appAccess: AppAccess[] = [];
+  if (payload.shareAccess) appAccess.push("Share");
+  if (payload.portfolioAccess) appAccess.push("Portfolio");
+
+  const roleMap: Record<string, string> = {
+    SuperAdmin: "superadmin",
+    Admin: "admin",
+    Employee: "employee",
+  };
+
+  await auth.api.createUser({
+    body: {
+      email: payload.email,
+      name: `${payload.firstName} ${payload.lastName}`,
+      role: (roleMap[payload.role] ?? "employee") as "user" | "admin",
+      data: {
+        appAccess,
+        twoFactorEnabled: payload.requireMfa,
+      },
+    },
+  });
+};
+
 export const route = {
   preload: () => Promise.all([getUsers(), getStats()]),
 } satisfies RouteDefinition;
@@ -89,6 +116,7 @@ const App: Component = () => {
         <InviteUserDrawer
           open={drawerOpen()}
           onOpenChange={setDrawerOpen}
+          onSubmit={inviteUser}
         />
       </AppLayout>
     </AuthGuard>

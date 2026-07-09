@@ -75,6 +75,11 @@ export const auth = betterAuth({
         required: false,
         defaultValue: false,
       },
+      appAccess: {
+        type: "string[]",
+        required: false,
+        defaultValue: [],
+      },
     },
   },
   advanced: {

@@ -4,7 +4,6 @@ import { query, createAsync, type RouteDefinition } from "@solidjs/router";
 import AppLayout from "~/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
 import RolesAccessPanel from "@/components/roles-access/RolesAccessPanel";
-import type { Role } from "@/types";
 import { prisma } from "@/db";
 
 const getRoles = query(async () => {
@@ -45,26 +44,26 @@ const RolesAccessPage: Component = () => {
   return (
     <AuthGuard>
       <AppLayout>
-      {/* Page header */}
-      <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 class="text-2xl font-semibold tracking-tight text-foreground md:text-[2rem] md:leading-10">
-            Roles &amp; Permissions
-          </h1>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Manage access policies and system permissions across your organization.
-          </p>
+        {/* Page header */}
+        <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-foreground md:text-[2rem] md:leading-10">
+              Roles &amp; Permissions
+            </h1>
+            <p class="mt-1 text-sm text-muted-foreground">
+              Manage access policies and system permissions across your organization.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            <Plus size={14} aria-hidden="true" />
+            Create Custom Role
+          </button>
         </div>
-        <button
-          type="button"
-          class="flex items-center gap-1 rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          <Plus size={14} aria-hidden="true" />
-          Create Custom Role
-        </button>
-      </div>
 
-      <RolesAccessPanel roles={roles() ?? []} />
+        <RolesAccessPanel roles={roles() ?? []} />
       </AppLayout>
     </AuthGuard>
   );
