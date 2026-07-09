@@ -11,6 +11,15 @@ export const GET = async (event: any) => {
     console.log("[IAM] Token endpoint GET request", { pathname: url.pathname });
   }
 
+  if (url.pathname.includes("/oauth2/end-session")) {
+    console.log("[IAM] End-session GET request", {
+      pathname: url.pathname,
+      id_token_hint: url.searchParams.get("id_token_hint") ? "present" : "missing",
+      client_id: url.searchParams.get("client_id"),
+      post_logout_redirect_uri: url.searchParams.get("post_logout_redirect_uri"),
+    });
+  }
+
   try {
     return await handlers.GET(event);
   } catch (error) {
@@ -52,6 +61,12 @@ export const POST = async (event: any) => {
     console.log("[IAM] Token exchange request full body:", body);
   }
 
+  if (url.pathname.includes("/oauth2/end-session")) {
+    console.log("[IAM] End-session POST request", {
+      pathname: url.pathname,
+    });
+  }
+
   try {
     const response = await handlers.POST(event);
 
@@ -65,6 +80,22 @@ export const POST = async (event: any) => {
         const cloned = response.clone();
         const errorBody = await cloned.text();
         console.error("[IAM] Token exchange FAILED", {
+          status: response.status,
+          error: errorBody.substring(0, 500),
+        });
+      }
+    }
+
+    if (url.pathname.includes("/oauth2/end-session")) {
+      console.log("[IAM] End-session response", {
+        status: response.status,
+        ok: response.ok,
+      });
+
+      if (!response.ok) {
+        const cloned = response.clone();
+        const errorBody = await cloned.text();
+        console.error("[IAM] End-session FAILED", {
           status: response.status,
           error: errorBody.substring(0, 500),
         });

@@ -7,6 +7,7 @@ interface SignOutButtonProps {
 	class?: string;
 	showIcon?: boolean;
 	label?: string;
+	onBeforeSignOut?: () => void;
 }
 
 export default function SignOutButton(props: SignOutButtonProps) {
@@ -15,6 +16,7 @@ export default function SignOutButton(props: SignOutButtonProps) {
 
 	const handleSignOut = async () => {
 		setIsLoading(true);
+		props.onBeforeSignOut?.();
 
 		try {
 			await authClient.signOut({

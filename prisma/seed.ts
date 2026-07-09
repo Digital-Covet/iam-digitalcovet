@@ -201,6 +201,10 @@ async function main() {
         clientId: "portfolio",
         clientSecret: hashedSecret,
         redirectUris: [portfolioRedirectUri, portfolioDevRedirectUri],
+        postLogoutRedirectUris: [
+          "https://portfolio.digitalcovet.com/auth/login",
+          "http://localhost:3000/auth/login",
+        ],
         skipConsent: true,
         enableEndSession: true,
         scopes: ["openid", "profile", "email"],
@@ -219,6 +223,15 @@ async function main() {
     const currentUris = existingClient.redirectUris;
     if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
       updates.redirectUris = targetUris;
+    }
+    // Ensure postLogoutRedirectUris are set
+    const targetLogoutUris = [
+      "https://portfolio.digitalcovet.com/auth/login",
+      "http://localhost:3000/auth/login",
+    ];
+    const currentLogoutUris = existingClient.postLogoutRedirectUris ?? [];
+    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+      updates.postLogoutRedirectUris = targetLogoutUris;
     }
     // Always update the secret to ensure it's properly hashed
     updates.clientSecret = hashedSecret;
@@ -249,6 +262,10 @@ async function main() {
         clientId: "share",
         clientSecret: shareHashedSecret,
         redirectUris: [shareRedirectUri, shareDevRedirectUri],
+        postLogoutRedirectUris: [
+          "https://share.digitalcovet.com/auth/login",
+          "http://localhost:5173/auth/login",
+        ],
         skipConsent: true,
         enableEndSession: true,
         scopes: ["openid", "profile", "email"],
@@ -266,6 +283,15 @@ async function main() {
     const currentUris = existingShareClient.redirectUris;
     if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
       updates.redirectUris = targetUris;
+    }
+    // Ensure postLogoutRedirectUris are set
+    const targetLogoutUris = [
+      "https://share.digitalcovet.com/auth/login",
+      "http://localhost:5173/auth/login",
+    ];
+    const currentLogoutUris = existingShareClient.postLogoutRedirectUris ?? [];
+    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+      updates.postLogoutRedirectUris = targetLogoutUris;
     }
     updates.clientSecret = shareHashedSecret;
     if (Object.keys(updates).length > 0) {

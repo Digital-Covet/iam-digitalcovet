@@ -3,7 +3,6 @@ import {
   ClipboardList,
   FingerprintPatternIcon,
   LayoutDashboard,
-  LogOut,
   Shield,
   Users,
 } from "lucide-solid";
@@ -18,9 +17,6 @@ export const primaryNavItems: NavItem[] = [
   { label: "Apps", icon: AppWindow, href: "/apps" },
 ];
 
-export const footerNavItems: NavItem[] = [
-
-  { label: "Sign Out", icon: LogOut, href: "#" },
-];
+export const footerNavItems: NavItem[] = [];
 
 export const auditLogEntries: AuditLogEntry[] = [];

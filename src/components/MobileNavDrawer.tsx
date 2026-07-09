@@ -1,8 +1,9 @@
 import type { Component } from "solid-js";
 import { createEffect, onCleanup, For } from "solid-js";
 import { X } from "lucide-solid";
-import { footerNavItems, primaryNavItems } from "@/data";
+import { primaryNavItems } from "@/data";
 import SidebarNavItem from "./SidebarNavItem";
+import SignOutButton from "./auth/sign-out-button";
 
 interface MobileNavDrawerProps {
   open: boolean;
@@ -102,11 +103,11 @@ const MobileNavDrawer: Component<MobileNavDrawerProps> = (props) => {
         </nav>
 
         <div class="border-t border-sidebar-border p-3">
-          <div class="space-y-1">
-            <For each={footerNavItems}>
-              {(item) => <SidebarNavItem item={item} onNavigate={props.onClose} />}
-            </For>
-          </div>
+          <SignOutButton
+            class="flex w-full items-center gap-4 rounded-md px-4 py-2 text-xs font-medium tracking-wide text-sidebar-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            showIcon
+            onBeforeSignOut={props.onClose}
+          />
         </div>
       </div>
     </div>
