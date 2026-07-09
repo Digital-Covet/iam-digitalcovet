@@ -15,6 +15,7 @@ import DeleteUserDialog from "@/components/user-directory/DeleteUserDialog";
 import type { AppAccess, DirectoryUser, StatCardData } from "@/types";
 import { prisma } from "@/db";
 import { auth } from "@/lib/auth";
+import { getRequestEvent } from "solid-js/web";
 
 const getUsers = query(async () => {
   "use server";
@@ -88,6 +89,9 @@ const inviteUser = async (payload: InviteUserPayload) => {
 
 const editUser = async (userId: string, payload: EditUserPayload) => {
   "use server";
+  const event = getRequestEvent();
+  if (!event) return;
+
   const appAccess: AppAccess[] = [];
   if (payload.shareAccess) appAccess.push("Share");
   if (payload.portfolioAccess) appAccess.push("Portfolio");
@@ -108,6 +112,7 @@ const editUser = async (userId: string, payload: EditUserPayload) => {
         twoFactorEnabled: payload.requireMfa,
       },
     },
+    headers: event.request.headers,
   });
 
   await revalidate("users");
@@ -115,24 +120,36 @@ const editUser = async (userId: string, payload: EditUserPayload) => {
 
 const disableUser = async (userId: string) => {
   "use server";
+  const event = getRequestEvent();
+  if (!event) return;
+
   await auth.api.banUser({
     body: { userId, banReason: "Disabled by administrator" },
+    headers: event.request.headers,
   });
   await revalidate("users");
 };
 
 const enableUser = async (userId: string) => {
   "use server";
+  const event = getRequestEvent();
+  if (!event) return;
+
   await auth.api.unbanUser({
     body: { userId },
+    headers: event.request.headers,
   });
   await revalidate("users");
 };
 
 const deleteUser = async (userId: string) => {
   "use server";
+  const event = getRequestEvent();
+  if (!event) return;
+
   await auth.api.removeUser({
     body: { userId },
+    headers: event.request.headers,
   });
   await revalidate("users");
 };
