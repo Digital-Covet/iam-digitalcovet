@@ -1,15 +1,33 @@
 import { Field } from "@ark-ui/solid/field";
 import { PasswordInput } from "@ark-ui/solid/password-input";
-import { A, useNavigate } from "@solidjs/router";
+import { A, useNavigate, query, createAsync } from "@solidjs/router";
 import { Meta, Title } from "@solidjs/meta";
 import { EyeIcon, EyeOffIcon } from "lucide-solid";
 import { createSignal, onMount, Show } from "solid-js";
 import { AuthToaster, authToaster } from "@/components/auth/auth-toaster";
 import { authClient } from "@/lib/auth-client";
 import { pageMetadata } from "@/lib/seo";
+import { validatePassword } from "@/lib/password-validation";
+import PasswordRequirements from "@/components/auth/PasswordRequirements";
+import type { PasswordPolicy } from "@/types";
+import { prisma } from "@/db";
+
+const getPolicies = query(async () => {
+  "use server";
+  const policies = await prisma.passwordPolicy.findMany({ orderBy: { createdAt: "asc" } });
+  return policies.map((p) => ({
+    id: p.id,
+    key: p.key,
+    label: p.label,
+    description: p.description,
+    value: p.value as string | number | boolean,
+    enabled: p.enabled,
+  }));
+}, "resetPolicies");
 
 export default function ResetPasswordForm() {
   const navigate = useNavigate();
+  const policies = createAsync(() => getPolicies());
   const [password, setPassword] = createSignal("");
   const [confirmPassword, setConfirmPassword] = createSignal("");
   const [resetToken, setResetToken] = createSignal<string | null>(null);
@@ -41,9 +59,14 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (password().length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
+    const policyData = policies();
+    if (policyData) {
+      const { valid, checks } = validatePassword(password(), policyData as PasswordPolicy[]);
+      if (!valid) {
+        const failed = checks.filter((c) => !c.passed);
+        setError(`Password does not meet policy: ${failed.map((c) => c.label).join(", ")}`);
+        return;
+      }
     }
 
     const token = resetToken();
@@ -149,10 +172,10 @@ export default function ResetPasswordForm() {
               </PasswordInput.Control>
             </PasswordInput.Root>
           </Field.Root>
-          <p class="text-xs font-medium text-muted-foreground">
-            Make sure your password is at least 8 characters long and includes a
-            mix of letters, numbers, and symbols.
-          </p>
+          <PasswordRequirements
+            password={password()}
+            policies={(policies() as PasswordPolicy[]) ?? []}
+          />
           <button
             type="submit"
             disabled={isLoading()}

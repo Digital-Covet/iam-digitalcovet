@@ -117,6 +117,7 @@ export interface ActiveSession {
 
 export interface PasswordPolicy {
   id: string;
+  key: string;
   label: string;
   description: string;
   value: string | number | boolean;

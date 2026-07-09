@@ -13,6 +13,7 @@ const getPolicies = query(async () => {
   const policies = await prisma.passwordPolicy.findMany({ orderBy: { createdAt: "asc" } });
   return policies.map((p) => ({
     id: p.id,
+    key: p.key,
     label: p.label,
     description: p.description,
     value: p.value as string | number | boolean,

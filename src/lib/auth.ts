@@ -99,6 +99,33 @@ export const auth = betterAuth({
     },
   },
   hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/reset-password") {
+        const newPassword = ctx.body?.newPassword as string | undefined;
+        if (newPassword) {
+          const policies = await prisma.passwordPolicy.findMany({
+            where: { enabled: true },
+          });
+
+          const validators: Record<string, (pw: string, val: string | number | boolean) => boolean> = {
+            min_length: (pw, val) => pw.length >= (val as number),
+            require_uppercase: (pw, val) => (val as boolean) ? /[A-Z]/.test(pw) : true,
+            require_lowercase: (pw, val) => (val as boolean) ? /[a-z]/.test(pw) : true,
+            require_numbers: (pw, val) => (val as boolean) ? /[0-9]/.test(pw) : true,
+            require_special: (pw, val) => (val as boolean) ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
+          };
+
+          for (const policy of policies) {
+            const validator = validators[policy.key];
+            if (validator && !validator(newPassword, policy.value as string | number | boolean)) {
+              throw new APIError("BAD_REQUEST", {
+                message: `Password does not meet policy: ${policy.label}`,
+              });
+            }
+          }
+        }
+      }
+    }),
     after: createAuthMiddleware(async (ctx) => {
       const returned = ctx.context.returned;
       const isError = returned instanceof APIError;
