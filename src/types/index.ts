@@ -122,3 +122,12 @@ export interface PasswordPolicy {
   value: string | number | boolean;
   enabled: boolean;
 }
+
+export interface AppItem {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  icon: Icon;
+  accessKey: AppAccess;
+}
