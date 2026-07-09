@@ -59,7 +59,8 @@ const AppsPage: Component = () => {
 
   const hasAccess = (accessKey: AppAccess) => {
     const data = accessData();
-    return data ? data.apps.includes(accessKey) : false;
+    const apps = data?.apps;
+    return Array.isArray(apps) && apps.includes(accessKey);
   };
 
   return (
