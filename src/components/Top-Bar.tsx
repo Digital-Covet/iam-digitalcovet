@@ -1,10 +1,9 @@
 import { Avatar } from "@ark-ui/solid/avatar";
-import type { Component } from "solid-js";
+import { type Component, Show } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { Bell, CircleQuestionMarkIcon, Menu, Search, Settings } from "lucide-solid";
+import { Menu, Search, Settings } from "lucide-solid";
 import IconButton from "./IconButton";
-
-const AVATAR_URL = "..."; // unchanged
+import { useAuth } from "./auth/auth-context";
 
 interface TopBarProps {
   onMenuClick?: () => void;
@@ -12,6 +11,7 @@ interface TopBarProps {
 
 const TopBar: Component<TopBarProps> = (props) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   return (
     <header class="flex h-16 w-full shrink-0 items-center justify-between rounded-xl border border-border bg-card px-3 md:px-6 text-sm shadow-sm">
@@ -40,8 +40,7 @@ const TopBar: Component<TopBarProps> = (props) => {
         </div>
       </div>
       <div class="flex items-center gap-2 md:gap-4 text-muted-foreground">
-        <IconButton icon={Bell} label="Notifications" />
-        <IconButton icon={CircleQuestionMarkIcon} label="Help" class="hidden md:flex" />
+
         <IconButton icon={Settings} label="Settings" onClick={() => navigate("/account-settings")} />
         <button
           type="button"
@@ -50,9 +49,11 @@ const TopBar: Component<TopBarProps> = (props) => {
         >
           <Avatar.Root class="h-full w-full">
             <Avatar.Fallback class="flex h-full w-full items-center justify-center bg-muted text-[10px] font-bold">
-              AD
+              {user()?.initials ?? "U"}
             </Avatar.Fallback>
-            <Avatar.Image src={AVATAR_URL} alt="Profile photo of the signed-in administrator" />
+            <Show when={user()?.image}>
+              <Avatar.Image src={user()!.image!} alt="Profile photo of the signed-in administrator" />
+            </Show>
           </Avatar.Root>
         </button>
       </div>

@@ -3,7 +3,6 @@ import {
   ClipboardList,
   FingerprintPatternIcon,
   LayoutDashboard,
-  LifeBuoy,
   LogOut,
   Shield,
   Users,
@@ -20,7 +19,7 @@ export const primaryNavItems: NavItem[] = [
 ];
 
 export const footerNavItems: NavItem[] = [
-  { label: "Support", icon: LifeBuoy, href: "#" },
+
   { label: "Sign Out", icon: LogOut, href: "#" },
 ];
 
