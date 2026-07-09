@@ -1,4 +1,4 @@
-import { emailOTPClient, twoFactorClient } from "better-auth/client/plugins";
+import { adminClient, emailOTPClient, twoFactorClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/solid";
 import { oauthProviderClient } from "@better-auth/oauth-provider/client";
 
@@ -30,6 +30,7 @@ export const authClient = createAuthClient({
       },
     }),
 
+    adminClient(),
     emailOTPClient(),
     oauthProviderClient(),
   ],

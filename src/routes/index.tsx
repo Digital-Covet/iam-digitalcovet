@@ -1,6 +1,6 @@
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
-import { query, createAsync, type RouteDefinition } from "@solidjs/router";
+import { query, createAsync, revalidate, type RouteDefinition } from "@solidjs/router";
 import { Activity, Mail, ShieldCheck, Users } from "lucide-solid";
 import AppLayout from "~/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
@@ -9,7 +9,10 @@ import StatCard from "@/components/user-directory/StatCard";
 import UsersTable from "@/components/user-directory/UsersTable";
 import InviteUserDrawer from "@/components/user-directory/InviteUserDrawer";
 import type { InviteUserPayload } from "@/components/user-directory/InviteUserDrawer";
-import type { AppAccess, StatCardData } from "@/types";
+import EditUserDrawer from "@/components/user-directory/EditUserDrawer";
+import type { EditUserPayload } from "@/components/user-directory/EditUserDrawer";
+import DeleteUserDialog from "@/components/user-directory/DeleteUserDialog";
+import type { AppAccess, DirectoryUser, StatCardData } from "@/types";
 import { prisma } from "@/db";
 import { auth } from "@/lib/auth";
 
@@ -25,6 +28,7 @@ const getUsers = query(async () => {
       twoFactorEnabled: true,
       appAccess: true,
       avatarTone: true,
+      banned: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -38,6 +42,7 @@ const getUsers = query(async () => {
     mfaStatus: (u.twoFactorEnabled ? "Enabled" : "Disabled") as "Enabled" | "Disabled",
     appAccess: u.appAccess as ("Share" | "Portfolio")[],
     avatarTone: (u.avatarTone ?? "primary") as "primary" | "neutral",
+    banned: u.banned ?? false,
   }));
 }, "users");
 
@@ -81,12 +86,67 @@ const inviteUser = async (payload: InviteUserPayload) => {
   });
 };
 
+const editUser = async (userId: string, payload: EditUserPayload) => {
+  "use server";
+  const appAccess: AppAccess[] = [];
+  if (payload.shareAccess) appAccess.push("Share");
+  if (payload.portfolioAccess) appAccess.push("Portfolio");
+
+  const roleMap: Record<string, string> = {
+    SuperAdmin: "superadmin",
+    Admin: "admin",
+    Employee: "employee",
+  };
+
+  await auth.api.adminUpdateUser({
+    body: {
+      userId,
+      data: {
+        name: `${payload.firstName} ${payload.lastName}`,
+        role: roleMap[payload.role] ?? "employee",
+        appAccess,
+        twoFactorEnabled: payload.requireMfa,
+      },
+    },
+  });
+
+  await revalidate("users");
+};
+
+const disableUser = async (userId: string) => {
+  "use server";
+  await auth.api.banUser({
+    body: { userId, banReason: "Disabled by administrator" },
+  });
+  await revalidate("users");
+};
+
+const enableUser = async (userId: string) => {
+  "use server";
+  await auth.api.unbanUser({
+    body: { userId },
+  });
+  await revalidate("users");
+};
+
+const deleteUser = async (userId: string) => {
+  "use server";
+  await auth.api.removeUser({
+    body: { userId },
+  });
+  await revalidate("users");
+};
+
 export const route = {
   preload: () => Promise.all([getUsers(), getStats()]),
 } satisfies RouteDefinition;
 
 const App: Component = () => {
   const [drawerOpen, setDrawerOpen] = createSignal(false);
+  const [editDrawerOpen, setEditDrawerOpen] = createSignal(false);
+  const [editingUser, setEditingUser] = createSignal<DirectoryUser | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = createSignal(false);
+  const [deletingUser, setDeletingUser] = createSignal<DirectoryUser | null>(null);
   const users = createAsync(() => getUsers());
   const stats = createAsync(() => getStats());
 
@@ -101,6 +161,33 @@ const App: Component = () => {
     ];
   };
 
+  const handleEdit = (user: DirectoryUser) => {
+    setEditingUser(user);
+    setEditDrawerOpen(true);
+  };
+
+  const handleDisable = async (user: DirectoryUser) => {
+    await disableUser(user.id);
+  };
+
+  const handleEnable = async (user: DirectoryUser) => {
+    await enableUser(user.id);
+  };
+
+  const handleDeleteClick = (user: DirectoryUser) => {
+    setDeletingUser(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    const user = deletingUser();
+    if (user) {
+      await deleteUser(user.id);
+      setDeleteDialogOpen(false);
+      setDeletingUser(null);
+    }
+  };
+
   return (
     <AuthGuard>
       <AppLayout>
@@ -112,11 +199,29 @@ const App: Component = () => {
         <div class="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <For each={statCards()}>{(card) => <StatCard card={card} />}</For>
         </div>
-        <UsersTable users={users() ?? []} />
+        <UsersTable
+          users={users() ?? []}
+          onEdit={handleEdit}
+          onDisable={handleDisable}
+          onEnable={handleEnable}
+          onDelete={handleDeleteClick}
+        />
         <InviteUserDrawer
           open={drawerOpen()}
           onOpenChange={setDrawerOpen}
           onSubmit={inviteUser}
+        />
+        <EditUserDrawer
+          open={editDrawerOpen()}
+          onOpenChange={setEditDrawerOpen}
+          user={editingUser()}
+          onSubmit={editUser}
+        />
+        <DeleteUserDialog
+          open={deleteDialogOpen()}
+          onOpenChange={setDeleteDialogOpen}
+          user={deletingUser()}
+          onConfirm={handleDeleteConfirm}
         />
       </AppLayout>
     </AuthGuard>

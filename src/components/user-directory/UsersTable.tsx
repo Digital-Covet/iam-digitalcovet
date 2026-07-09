@@ -9,6 +9,10 @@ const columns = ["User", "Roles", "2FA Status", "App Access", "Actions"];
 
 interface UsersTableProps {
   users: DirectoryUser[];
+  onEdit: (user: DirectoryUser) => void;
+  onDisable: (user: DirectoryUser) => void;
+  onEnable: (user: DirectoryUser) => void;
+  onDelete: (user: DirectoryUser) => void;
 }
 
 const PAGE_SIZE = 5;
@@ -51,7 +55,17 @@ const UsersTable: Component<UsersTableProps> = (props) => {
             </tr>
           </thead>
           <tbody class="divide-y divide-border text-foreground">
-            <For each={paginatedUsers()}>{(user) => <UserRow user={user} />}</For>
+            <For each={paginatedUsers()}>
+              {(user) => (
+                <UserRow
+                  user={user}
+                  onEdit={props.onEdit}
+                  onDisable={props.onDisable}
+                  onEnable={props.onEnable}
+                  onDelete={props.onDelete}
+                />
+              )}
+            </For>
           </tbody>
         </table>
       </div>

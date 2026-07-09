@@ -12,7 +12,15 @@ const avatarToneClasses: Record<AvatarTone, string> = {
   neutral: "bg-muted text-muted-foreground",
 };
 
-const UserRow: Component<{ user: DirectoryUser }> = (props) => (
+interface UserRowProps {
+  user: DirectoryUser;
+  onEdit: (user: DirectoryUser) => void;
+  onDisable: (user: DirectoryUser) => void;
+  onEnable: (user: DirectoryUser) => void;
+  onDelete: (user: DirectoryUser) => void;
+}
+
+const UserRow: Component<UserRowProps> = (props) => (
   <tr class="h-12 transition-colors hover:bg-muted/50">
     <td class="px-4 py-2">
       <div class="flex items-center">
@@ -49,14 +57,26 @@ const UserRow: Component<{ user: DirectoryUser }> = (props) => (
         </Menu.Trigger>
         <Menu.Positioner>
           <Menu.Content class="min-w-36 origin-top-right rounded-md border bg-popover p-1 shadow-md transition-all duration-150 data-[state=closed]:scale-95 data-[state=closed]:opacity-0 data-[state=open]:scale-100 data-[state=open]:opacity-100">
-            <Menu.Item value="edit" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground">
+            <Menu.Item
+              value="edit"
+              onSelect={() => props.onEdit(props.user)}
+              class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+            >
               Edit
             </Menu.Item>
-            <Menu.Item value="disable" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground">
-              Disable
+            <Menu.Item
+              value="disable"
+              onSelect={() => (props.user.banned ? props.onEnable(props.user) : props.onDisable(props.user))}
+              class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+            >
+              {props.user.banned ? "Enable" : "Disable"}
             </Menu.Item>
             <Menu.Separator class="my-1 h-px bg-border" />
-            <Menu.Item value="delete" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive">
+            <Menu.Item
+              value="delete"
+              onSelect={() => props.onDelete(props.user)}
+              class="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm text-destructive data-[highlighted]:bg-destructive/10 data-[highlighted]:text-destructive"
+            >
               Delete
             </Menu.Item>
           </Menu.Content>

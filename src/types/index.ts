@@ -17,6 +17,7 @@ export interface DirectoryUser {
   mfaStatus: MfaStatus;
   appAccess: AppAccess[];
   avatarTone: AvatarTone;
+  banned: boolean;
 }
 
 export interface NavItem {
