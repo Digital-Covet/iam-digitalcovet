@@ -13,6 +13,7 @@ const IconButton: Component<IconButtonProps> = (props): JSX.Element => (
     type="button"
     aria-label={props.label}
     class={`cursor-pointer rounded-full p-2 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:opacity-80 ${props.class ?? ""}`}
+    onClick={props.onClick}
   >
     <props.icon size={22} aria-hidden="true" />
   </button>
