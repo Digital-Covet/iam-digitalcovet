@@ -1,6 +1,7 @@
 import { useNavigate } from "@solidjs/router";
 import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
 import { authClient } from "@/lib/auth-client";
+import { resolveAvatarUrl } from "@/lib/avatar";
 import { AuthProvider, type AuthUser } from "./auth-context";
 
 interface AuthGuardProps {
@@ -44,7 +45,7 @@ export default function AuthGuard(props: AuthGuardProps) {
           name: userData.name,
           email: userData.email,
           initials: computeInitials(userData.name),
-          image: userData.image ?? null,
+          image: resolveAvatarUrl(userData.image),
         });
       } catch {
         if (!cancelled) {

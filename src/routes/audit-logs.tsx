@@ -9,6 +9,7 @@ import AuditLogsTable from "@/components/audit-logs/AuditLogsTable";
 import type { AuditLogEntry } from "@/types";
 import { prisma } from "@/db";
 import { lookupIp } from "@/lib/ip-geolocation";
+import { resolveAvatarUrl } from "@/lib/avatar";
 
 const eventLabels: Record<string, string> = {
   granted_role: "Granted Role",
@@ -50,7 +51,7 @@ const getAuditLogs = query(async () => {
         timestamp: log.timestamp.toISOString(),
         actorName: log.actorName,
         actorEmail: log.actorEmail,
-        actorAvatarUrl: log.actorAvatarUrl ?? undefined,
+        actorAvatarUrl: resolveAvatarUrl(log.actorAvatarUrl),
         actorInitials: log.actorInitials,
         event: (eventLabels[log.event] ?? log.event) as AuditLogEntry["event"],
         targetApp: (targetLabels[log.targetApp] ?? log.targetApp) as AuditLogEntry["targetApp"],

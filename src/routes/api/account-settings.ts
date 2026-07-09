@@ -1,5 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { prisma } from "@/db";
+import { resolveAvatarUrl } from "@/lib/avatar";
 
 const roleLabels: Record<string, string> = {
   employee: "Employee",
@@ -48,7 +49,7 @@ export const POST = async (event: APIEvent) => {
         userName: user.name,
         userEmail: user.email,
         userInitials: user.initials ?? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-        userAvatarUrl: user.image ?? undefined,
+        userAvatarUrl: resolveAvatarUrl(user.image),
         device,
         browser,
         ipAddress: s.ipAddress ?? "N/A",
@@ -68,7 +69,7 @@ export const POST = async (event: APIEvent) => {
           initials: user.initials ?? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
           role: (roleLabels[user.role] ?? user.role) as "Employee" | "Admin" | "SuperAdmin",
           department: user.departmentId,
-          avatarUrl: user.image,
+          avatarUrl: resolveAvatarUrl(user.image),
           twoFactorEnabled: user.twoFactorEnabled ?? false,
           createdAt: user.createdAt.toISOString(),
         },

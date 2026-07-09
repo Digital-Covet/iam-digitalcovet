@@ -16,6 +16,7 @@ import StatCard from "@/components/user-directory/StatCard";
 import type { StatCardData, AuditLogEntry, ActiveSession } from "@/types";
 import { prisma } from "@/db";
 import { lookupIp } from "@/lib/ip-geolocation";
+import { resolveAvatarUrl } from "@/lib/avatar";
 
 const quickLinks = [
   { label: "User Directory", description: "Manage users and invites", icon: Users, href: "/" },
@@ -78,7 +79,7 @@ const getDashboardData = query(async () => {
         timestamp: log.timestamp.toISOString(),
         actorName: log.actorName,
         actorEmail: log.actorEmail,
-        actorAvatarUrl: log.actorAvatarUrl ?? undefined,
+        actorAvatarUrl: resolveAvatarUrl(log.actorAvatarUrl),
         actorInitials: log.actorInitials,
         event: (eventLabels[log.event] ?? log.event) as AuditLogEntry["event"],
         targetApp: (targetLabels[log.targetApp] ?? log.targetApp) as AuditLogEntry["targetApp"],
@@ -116,7 +117,7 @@ const getDashboardData = query(async () => {
         userName: s.user.name,
         userEmail: s.user.email,
         userInitials: s.user.initials ?? s.user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-        userAvatarUrl: s.user.image ?? undefined,
+        userAvatarUrl: resolveAvatarUrl(s.user.image),
         device,
         browser,
         ipAddress: ip ?? "N/A",

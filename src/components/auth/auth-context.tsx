@@ -4,7 +4,7 @@ export interface AuthUser {
   name: string;
   email: string;
   initials: string;
-  image: string | null;
+  image: string | undefined;
 }
 
 interface AuthContextValue {

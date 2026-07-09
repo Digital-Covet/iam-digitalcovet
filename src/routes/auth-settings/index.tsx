@@ -12,6 +12,7 @@ import ActiveSessionsTable from "@/components/auth-settings/ActiveSessionsTable"
 import type { AuthMethod, PasswordPolicy, ActiveSession, StatCardData } from "@/types";
 import { prisma } from "@/db";
 import { lookupIp } from "@/lib/ip-geolocation";
+import { resolveAvatarUrl } from "@/lib/avatar";
 
 const providerLabels: Record<string, string> = {
   password: "Password",
@@ -98,7 +99,7 @@ const getAuthData = query(async () => {
         userName: s.user.name,
         userEmail: s.user.email,
         userInitials: s.user.initials ?? s.user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase(),
-        userAvatarUrl: s.user.image ?? undefined,
+        userAvatarUrl: resolveAvatarUrl(s.user.image),
         device,
         browser,
         ipAddress: ip ?? "N/A",
