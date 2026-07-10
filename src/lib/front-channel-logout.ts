@@ -76,7 +76,11 @@ export async function notifyFrontChannelLogout(
 			return;
 		}
 
-		for (const redirectUri of client.postLogoutRedirectUris) {
+		const remoteUris = client.postLogoutRedirectUris.filter(
+			(uri) => !uri.startsWith("http://localhost"),
+		);
+
+		for (const redirectUri of remoteUris) {
 			try {
 				const logoutUrl = new URL(redirectUri);
 				logoutUrl.pathname = FRONT_CHANNEL_LOGOUT_PATH;
