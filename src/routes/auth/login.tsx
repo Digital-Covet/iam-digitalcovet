@@ -2,7 +2,7 @@ import { Field } from "@ark-ui/solid/field";
 import { A, useNavigate, useSearchParams } from "@solidjs/router";
 import { Meta, Title } from "@solidjs/meta";
 import { Eye, EyeOff, Mail, X } from "lucide-solid";
-import { createSignal, type JSX, Show } from "solid-js";
+import { createSignal, type JSX, onMount, Show } from "solid-js";
 import { authToaster, AuthToaster } from "@/components/auth/auth-toaster";
 import { authClient } from "@/lib/auth-client";
 import { pageMetadata } from "@/lib/seo";
@@ -35,6 +35,24 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+  onMount(() => {
+    void (async () => {
+      try {
+        const session = await authClient.getSession();
+        if (session.data?.session) {
+          const redirect = safeRedirectUrl();
+          if (redirect) {
+            window.location.replace(redirect);
+          } else {
+            navigate("/dashboard", { replace: true });
+          }
+        }
+      } catch {
+        // Session check failed — stay on login page
+      }
+    })();
+  });
+
   const safeRedirectUrl = () => {
     const raw = searchParams.redirect;
     const value = Array.isArray(raw) ? raw[0] : raw;

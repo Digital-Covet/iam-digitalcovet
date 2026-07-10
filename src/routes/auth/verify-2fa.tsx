@@ -1,10 +1,29 @@
 import { Meta, Title } from "@solidjs/meta";
-import { useSearchParams } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
+import { onMount } from "solid-js";
 import TwoFactorVerify from "@/components/auth/two-factor-verify";
 import { pageMetadata } from "@/lib/seo";
+import { authClient } from "@/lib/auth-client";
 
 export default function Verify2FAPage() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  onMount(() => {
+    void (async () => {
+      try {
+        const session = await authClient.getSession();
+        if (session.data?.session) {
+          const redirectParam = Array.isArray(searchParams.redirect)
+            ? searchParams.redirect[0]
+            : searchParams.redirect;
+          navigate(redirectParam || "/dashboard", { replace: true });
+        }
+      } catch {
+        // Session check failed — stay on 2FA page
+      }
+    })();
+  });
 
   const search = typeof window !== "undefined" ? window.location.search : "";
   const isOAuthFlow = !!(
