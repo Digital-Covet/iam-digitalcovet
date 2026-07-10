@@ -175,37 +175,6 @@ const DashboardPage: Component = () => {
           <For each={statCards()}>{(card) => <StatCard card={card} />}</For>
         </div>
 
-        {/* Quick Links */}
-        <section class="mb-8">
-          <h2 class="mb-3 font-heading text-base font-semibold text-foreground">
-            Quick Access
-          </h2>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <For each={quickLinks}>
-              {(link) => (
-                <A
-                  href={link.href}
-                  class="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm transition-colors hover:border-primary/30 hover:shadow-md"
-                >
-                  <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent">
-                    <link.icon size={20} aria-hidden="true" class="text-primary" />
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-sm font-medium text-foreground">{link.label}</span>
-                      <ArrowRight
-                        size={14}
-                        aria-hidden="true"
-                        class="text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-                      />
-                    </div>
-                    <p class="mt-0.5 text-xs text-muted-foreground">{link.description}</p>
-                  </div>
-                </A>
-              )}
-            </For>
-          </div>
-        </section>
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Recent Audit Logs */}
