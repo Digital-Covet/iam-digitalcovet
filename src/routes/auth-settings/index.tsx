@@ -2,7 +2,7 @@
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
 import { A, query, createAsync, type RouteDefinition } from "@solidjs/router";
-import { Settings2, ShieldCheck, ShieldHalf, Activity, Lock, Globe } from "lucide-solid";
+import { ShieldCheck, ShieldHalf, Activity, Lock, Globe } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
 import StatCard from "@/components/user-directory/StatCard";
@@ -188,21 +188,6 @@ const AuthenticationPage: Component = () => {
                 Manage authentication methods, password policies, and monitor active sessions across your organization.
               </p>
             </div>
-          </div>
-          <div class="flex gap-3">
-            <button
-              type="button"
-              class="flex items-center rounded-md border border-border px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <Settings2 size={14} aria-hidden="true" class="mr-1.5" />
-              Advanced Settings
-            </button>
-            <button
-              type="button"
-              class="flex items-center rounded-md bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              Configure SSO
-            </button>
           </div>
         </div>
 

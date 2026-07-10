@@ -160,4 +160,12 @@
   body {
     @apply min-h-screen bg-background text-foreground font-sans antialiased;
   }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  summary,
+  label[for],
+  a[href] {
+    cursor: pointer;
+  }
 }
