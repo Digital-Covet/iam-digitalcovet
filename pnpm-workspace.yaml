@@ -3,3 +3,5 @@ allowBuilds:
   '@prisma/engines': true
   esbuild: true
   prisma: true
+patchedDependencies:
+  '@better-auth/oauth-provider@1.6.23': patches/@better-auth__oauth-provider@1.6.23.patch

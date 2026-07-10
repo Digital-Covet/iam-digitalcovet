@@ -1,0 +1,61 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 847085c481843ce6852a5db9006a2e79b7f77b15..dd442ed6ecc8551feb2300088a79c5729d910ef6 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -1141,32 +1141,30 @@ async function rpInitiatedLogoutEndpoint(ctx, opts) {
+ 		error: "invalid_request"
+ 	});
+ 	const sessionId = idTokenPayload.sid;
+-	if (!sessionId) throw new APIError$1("INTERNAL_SERVER_ERROR", {
+-		error_description: "id token missing session",
+-		error: "invalid_request"
+-	});
+-	try {
+-		const session = await ctx.context.adapter.findOne({
+-			model: "session",
+-			where: [{
+-				field: "id",
+-				value: sessionId
+-			}]
+-		});
+-		session?.token ? await ctx.context.internalAdapter.deleteSession(session?.token) : session?.id ? await ctx.context.adapter.delete({
+-			model: "session",
+-			where: [{
+-				field: "id",
+-				value: session.id
+-			}]
+-		}) : await ctx.context.adapter.delete({
+-			model: "session",
+-			where: [{
+-				field: "id",
+-				value: sessionId
+-			}]
+-		});
+-	} catch {}
++	if (sessionId) {
++		try {
++			const session = await ctx.context.adapter.findOne({
++				model: "session",
++				where: [{
++					field: "id",
++					value: sessionId
++				}]
++			});
++			session?.token ? await ctx.context.internalAdapter.deleteSession(session?.token) : session?.id ? await ctx.context.adapter.delete({
++				model: "session",
++				where: [{
++					field: "id",
++					value: session.id
++				}]
++			}) : await ctx.context.adapter.delete({
++				model: "session",
++				where: [{
++					field: "id",
++					value: sessionId
++				}]
++			});
++		} catch {}
++	}
+ 	if (post_logout_redirect_uri) {
+ 		if (client.postLogoutRedirectUris?.includes(post_logout_redirect_uri)) {
+ 			const redirectUri = new URL(post_logout_redirect_uri);
