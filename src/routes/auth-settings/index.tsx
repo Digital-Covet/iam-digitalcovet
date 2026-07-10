@@ -1,6 +1,6 @@
 
 import type { Component } from "solid-js";
-import { createSignal, createMemo, For } from "solid-js";
+import { createSignal, createEffect, For } from "solid-js";
 import { A, query, createAsync, type RouteDefinition } from "@solidjs/router";
 import { ShieldCheck, ShieldHalf, Activity, Lock, Globe } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
@@ -132,37 +132,30 @@ export const route = {
 
 const AuthenticationPage: Component = () => {
   const data = createAsync(() => getAuthData());
+  const [methods, setMethods] = createSignal<AuthMethod[]>([]);
+  const [policies, setPolicies] = createSignal<PasswordPolicy[]>([]);
 
-  const [methodOverrides, setMethodOverrides] = createSignal<
-    Record<string, AuthMethod["status"]>
-  >({});
-  const [policyOverrides, setPolicyOverrides] = createSignal<
-    Record<string, boolean>
-  >({});
-
-  const methods = createMemo<AuthMethod[]>(() =>
-    (data()?.methods ?? []).map((m) => ({
-      ...m,
-      status: methodOverrides()[m.id] ?? m.status,
-    })),
-  );
-
-  const policies = createMemo<PasswordPolicy[]>(() =>
-    (data()?.policies ?? []).map((p) => ({
-      ...p,
-      enabled: policyOverrides()[p.id] ?? p.enabled,
-    })),
-  );
+  // Reactively seed local state once the server data resolves
+  createEffect(() => {
+    const d = data();
+    if (d) {
+      setMethods(d.methods);
+      setPolicies(d.policies);
+    }
+  });
 
   const handleMethodToggle = (id: string, enabled: boolean) => {
-    setMethodOverrides((prev) => ({
-      ...prev,
-      [id]: enabled ? "Enabled" : "Disabled",
-    }));
+    setMethods((prev) =>
+      prev.map((m) =>
+        m.id === id ? { ...m, status: enabled ? "Enabled" : "Disabled" } : m,
+      ),
+    );
   };
 
   const handlePolicyToggle = (id: string, enabled: boolean) => {
-    setPolicyOverrides((prev) => ({ ...prev, [id]: enabled }));
+    setPolicies((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, enabled } : p)),
+    );
   };
 
   const authStatCards = (): StatCardData[] => {
