@@ -19,6 +19,10 @@ export default function SignOutButton(props: SignOutButtonProps) {
 		props.onBeforeSignOut?.();
 
 		try {
+			await fetch("/api/front-channel-logout", { method: "POST" }).catch((err) => {
+				console.warn("Front-channel logout notification failed:", err);
+			});
+
 			await authClient.signOut({
 				fetchOptions: {
 					onSuccess: () => {
