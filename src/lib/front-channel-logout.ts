@@ -46,7 +46,7 @@ export async function notifyFrontChannelLogout(
 		where: {
 			enableEndSession: true,
 			postLogoutRedirectUris: {
-				isNot: null,
+				isEmpty: false,
 			},
 		},
 		select: {
