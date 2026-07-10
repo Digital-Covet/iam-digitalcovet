@@ -196,25 +196,6 @@ const AuthenticationPage: Component = () => {
           </For>
         </div>
 
-        {/* ─── Authentication Methods ─── */}
-        <section class="mb-6">
-          <div class="mb-3 flex items-center justify-between">
-            <h2 class="font-heading text-base font-semibold text-foreground">
-              Authentication Methods
-            </h2>
-            <span class="text-xs text-muted-foreground">
-              {methods().filter((m) => m.status === "Enabled").length} of{" "}
-              {methods().length} enabled
-            </span>
-          </div>
-          <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <For each={methods()}>
-              {(method) => (
-                <AuthMethodCard method={method} onToggle={handleMethodToggle} />
-              )}
-            </For>
-          </div>
-        </section>
 
         {/* ─── Password Policy ─── */}
         <A href="/auth-settings/password-policy" class="block">
