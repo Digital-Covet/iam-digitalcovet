@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import { createSignal } from "solid-js";
+import { createSignal, createMemo } from "solid-js";
 import { A, query, createAsync, type RouteDefinition } from "@solidjs/router";
 import { ArrowLeft } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
@@ -27,14 +27,20 @@ export const route = {
 
 const PasswordPolicyPage: Component = () => {
   const data = createAsync(() => getPolicies());
-  const [policies, setPolicies] = createSignal<PasswordPolicy[]>([]);
 
-  if (data()) setPolicies(data()!);
+  const [policyOverrides, setPolicyOverrides] = createSignal<
+    Record<string, boolean>
+  >({});
+
+  const policies = createMemo<PasswordPolicy[]>(() =>
+    (data() ?? []).map((p) => ({
+      ...p,
+      enabled: policyOverrides()[p.id] ?? p.enabled,
+    })),
+  );
 
   const handlePolicyToggle = (id: string, enabled: boolean) => {
-    setPolicies((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, enabled } : p)),
-    );
+    setPolicyOverrides((prev) => ({ ...prev, [id]: enabled }));
   };
 
   return (
