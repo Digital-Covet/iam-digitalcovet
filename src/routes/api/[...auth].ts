@@ -1,7 +1,19 @@
 import { auth } from "@/lib/auth";
 import { toSolidStartHandler } from "better-auth/solid-start";
+import { notifyFrontChannelLogout } from "@/lib/front-channel-logout";
 
 const handlers = toSolidStartHandler(auth);
+
+function decodeIdTokenHint(idTokenHint: string): { sub?: string; sid?: string } | null {
+	try {
+		const parts = idTokenHint.split(".");
+		if (parts.length !== 3) return null;
+		const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+		return { sub: payload.sub, sid: payload.sid };
+	} catch {
+		return null;
+	}
+}
 
 export const GET = async (event: any) => {
   const request = event.request as Request;
@@ -21,7 +33,32 @@ export const GET = async (event: any) => {
   }
 
   try {
-    return await handlers.GET(event);
+    const response = await handlers.GET(event);
+
+    if (url.pathname.includes("/oauth2/end-session")) {
+      console.log("[IAM] End-session GET response", {
+        status: response.status,
+        ok: response.ok,
+      });
+
+      if (response.ok) {
+        const idTokenHint = url.searchParams.get("id_token_hint");
+        if (idTokenHint) {
+          const decoded = decodeIdTokenHint(idTokenHint);
+          if (decoded?.sub) {
+            console.log("[IAM] Triggering front-channel logout for end-session GET", {
+              userId: decoded.sub,
+              sessionId: decoded.sid,
+            });
+            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch((error) => {
+              console.error("[IAM] Front-channel logout notification failed:", error);
+            });
+          }
+        }
+      }
+    }
+
+    return response;
   } catch (error) {
     console.error("[IAM] GET handler error", {
       error: error instanceof Error ? error.message : String(error),
@@ -99,6 +136,20 @@ export const POST = async (event: any) => {
           status: response.status,
           error: errorBody.substring(0, 500),
         });
+      } else {
+        const idTokenHint = url.searchParams.get("id_token_hint");
+        if (idTokenHint) {
+          const decoded = decodeIdTokenHint(idTokenHint);
+          if (decoded?.sub) {
+            console.log("[IAM] Triggering front-channel logout for end-session", {
+              userId: decoded.sub,
+              sessionId: decoded.sid,
+            });
+            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch((error) => {
+              console.error("[IAM] Front-channel logout notification failed:", error);
+            });
+          }
+        }
       }
     }
 
