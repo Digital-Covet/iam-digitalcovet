@@ -1,5 +1,6 @@
 {
   "name": "IAM Digital Covet",
+  "packageManager": "pnpm@11.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite dev",
