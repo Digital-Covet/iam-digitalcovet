@@ -20,7 +20,9 @@ export const auth = betterAuth({
     "https://iam.digitalcovet.com",
     "https://share.digitalcovet.com",
     "https://portfolio.digitalcovet.com",
+    "https://desk.digitalcovet.com",
     "http://localhost:5173",
+    "http://localhost:3000",
   ],
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -106,23 +108,24 @@ export const auth = betterAuth({
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path === "/reset-password") {
-        const newPassword = ctx.body?.newPassword as string | undefined;
+        const newPassword: string | undefined = ctx.body?.newPassword;
         if (newPassword) {
           const policies = await prisma.passwordPolicy.findMany({
             where: { enabled: true },
           });
 
           const validators: Record<string, (pw: string, val: string | number | boolean) => boolean> = {
-            min_length: (pw, val) => pw.length >= (val as number),
-            require_uppercase: (pw, val) => (val as boolean) ? /[A-Z]/.test(pw) : true,
-            require_lowercase: (pw, val) => (val as boolean) ? /[a-z]/.test(pw) : true,
-            require_numbers: (pw, val) => (val as boolean) ? /[0-9]/.test(pw) : true,
-            require_special: (pw, val) => (val as boolean) ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
+            min_length: (pw, val) => pw.length >= Number(val),
+            require_uppercase: (pw, val) => val ? /[A-Z]/.test(pw) : true,
+            require_lowercase: (pw, val) => val ? /[a-z]/.test(pw) : true,
+            require_numbers: (pw, val) => val ? /[0-9]/.test(pw) : true,
+            require_special: (pw, val) => val ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
           };
 
           for (const policy of policies) {
             const validator = validators[policy.key];
-            if (validator && !validator(newPassword, policy.value as string | number | boolean)) {
+            const policyValue: string | number | boolean = policy.value;
+            if (validator && !validator(newPassword, policyValue)) {
               throw new APIError("BAD_REQUEST", {
                 message: `Password does not meet policy: ${policy.label}`,
               });
@@ -171,7 +174,7 @@ export const auth = betterAuth({
       }
 
       if (ctx.path === "/oauth2/token" && !isError) {
-        const body = ctx.body as Record<string, string> | undefined;
+        const body: Record<string, string> | undefined = ctx.body;
         const clientId = body?.client_id;
         const targetApp =
           clientId === "share" ? "share" :

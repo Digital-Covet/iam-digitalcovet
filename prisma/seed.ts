@@ -313,6 +313,68 @@ async function main() {
     }
   }
 
+  // ── Desk OAuth Client ──
+  const deskRedirectUri = "https://desk.digitalcovet.com/api/auth/callback/desk";
+  const deskDevRedirectUri = "http://localhost:3000/api/auth/callback/desk";
+  const deskPlainSecret = process.env.OAUTH_CLIENT_SECRET_DESK ?? "";
+  const deskHashedSecret = hashClientSecret(deskPlainSecret);
+
+  const existingDeskClient = await prisma.oauthClient.findUnique({
+    where: { clientId: "desk" },
+  });
+
+  if (!existingDeskClient) {
+    await prisma.oauthClient.create({
+      data: {
+        id: randomUUID(),
+        clientId: "desk",
+        clientSecret: deskHashedSecret,
+        redirectUris: [deskRedirectUri, deskDevRedirectUri],
+        postLogoutRedirectUris: [
+          "https://desk.digitalcovet.com",
+          "http://localhost:3000",
+        ],
+        skipConsent: true,
+        enableEndSession: true,
+        scopes: ["openid", "profile", "email"],
+        grantTypes: ["authorization_code", "refresh_token"],
+        responseTypes: ["code"],
+        tokenEndpointAuthMethod: "client_secret_post",
+        name: "Digital Covet Desk",
+        uri: "https://desk.digitalcovet.com",
+      },
+    });
+    console.log("Created OAuth client: desk");
+  } else {
+    const updates: Record<string, unknown> = {};
+    const targetUris = [deskRedirectUri, deskDevRedirectUri];
+    const currentUris = existingDeskClient.redirectUris;
+    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+      updates.redirectUris = targetUris;
+    }
+    const targetLogoutUris = [
+      "https://desk.digitalcovet.com",
+      "http://localhost:3000",
+    ];
+    const currentLogoutUris = existingDeskClient.postLogoutRedirectUris ?? [];
+    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+      updates.postLogoutRedirectUris = targetLogoutUris;
+    }
+    if (!existingDeskClient.enableEndSession) {
+      updates.enableEndSession = true;
+    }
+    updates.clientSecret = deskHashedSecret;
+    if (Object.keys(updates).length > 0) {
+      await prisma.oauthClient.update({
+        where: { clientId: "desk" },
+        data: updates,
+      });
+      console.log("Updated OAuth client 'desk':", Object.keys(updates).join(", "));
+    } else {
+      console.log("OAuth client 'desk' already exists, skipping");
+    }
+  }
+
   console.log("Seed complete: 3 roles, auth methods, password policies, OAuth clients");
 }
 
