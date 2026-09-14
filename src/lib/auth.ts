@@ -179,6 +179,7 @@ export const auth = betterAuth({
         const targetApp =
           clientId === "share" ? "share" :
           clientId === "portfolio" ? "portfolio" :
+          clientId === "desk" ? "desk" :
           undefined;
 
         console.log("[Audit] /oauth2/token", {

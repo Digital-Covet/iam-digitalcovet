@@ -336,7 +336,7 @@ async function main() {
         ],
         skipConsent: true,
         enableEndSession: true,
-        scopes: ["openid", "profile", "email"],
+        scopes: ["openid", "profile", "email", "offline_access"],
         grantTypes: ["authorization_code", "refresh_token"],
         responseTypes: ["code"],
         tokenEndpointAuthMethod: "client_secret_post",
@@ -351,6 +351,11 @@ async function main() {
     const currentUris = existingDeskClient.redirectUris;
     if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
       updates.redirectUris = targetUris;
+    }
+    const targetScopes = ["openid", "profile", "email", "offline_access"];
+    const currentScopes = [...(existingDeskClient.scopes ?? [])].sort();
+    if (JSON.stringify(currentScopes) !== JSON.stringify([...targetScopes].sort())) {
+      updates.scopes = targetScopes;
     }
     const targetLogoutUris = [
       "https://desk.flonion.com",
