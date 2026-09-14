@@ -3,5 +3,11 @@ allowBuilds:
   '@prisma/engines': true
   esbuild: true
   prisma: true
-patchedDependencies:
-  '@better-auth/oauth-provider@1.6.23': patches/@better-auth__oauth-provider@1.6.23.patch
+minimumReleaseAgeExclude:
+  - '@ark-ui/solid@5.39.2'
+  - lucide-solid@1.46.0
+overrides:
+  fast-uri: '>=3.1.6'
+  deepmerge-ts: '>=8.0.0'
+  mysql2: '>=3.23.1'
+
