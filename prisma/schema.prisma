@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -63,37 +64,36 @@ enum AuthMethodStatus {
 }
 
 model User {
-  id                  String       @id
-  name                String
-  email               String
-  emailVerified       Boolean      @default(false)
-  image               String?
+  id            String  @id
+  name          String
+  email         String
+  emailVerified Boolean @default(false)
+  image         String?
 
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  twoFactorEnabled    Boolean?     @default(false)
-  passwordChanged     Boolean      @default(false)
+  twoFactorEnabled Boolean? @default(false)
+  passwordChanged  Boolean  @default(false)
 
-  role                UserRole     @default(employee)
+  role UserRole @default(employee)
 
-  banned              Boolean?     @default(false)
-  banReason           String?
-  banExpires          DateTime?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
-  departmentId        String?
+  departmentId String?
 
-  initials            String?
-  avatarTone          AvatarTone?  @default(primary)
-  appAccess           AppAccess[]
+  initials   String?
+  avatarTone AvatarTone? @default(primary)
+  appAccess  AppAccess[]
 
   sessions            Session[]
   accounts            Account[]
   twofactors          TwoFactor[]
   auditLogs           AuditLog[]
   members             Member[]
-  invitations         Invitation[] @relation("InvitationInvitedBy")
-  assignedInvitations Invitation[] @relation("InvitationUser")
+  invitations         Invitation[]
   oauthclients        OauthClient[]
   oauthrefreshtokens  OauthRefreshToken[]
   oauthaccesstokens   OauthAccessToken[]
@@ -104,28 +104,28 @@ model User {
 }
 
 model Session {
-  id                   String    @id
-  expiresAt            DateTime
-  token                String
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  ipAddress            String?
-  userAgent            String?
+  ipAddress String?
+  userAgent String?
 
-  device               String?
-  browser              String?
-  location             String?
-  lastActivity         DateTime?
+  device       String?
+  browser      String?
+  location     String?
+  lastActivity DateTime?
 
-  userId               String
-  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   impersonatedBy       String?
   activeOrganizationId String?
 
-  oauthrefreshtokens   OauthRefreshToken[]
-  oauthaccesstokens    OauthAccessToken[]
+  oauthrefreshtokens OauthRefreshToken[]
+  oauthaccesstokens  OauthAccessToken[]
 
   @@unique([token])
   @@index([userId])
@@ -134,26 +134,26 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id String @id
 
-  accountId             String
-  providerId            String
+  accountId  String
+  providerId String
 
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
 
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
 
-  scope                 String?
-  password              String?
+  scope    String?
+  password String?
 
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([providerId, accountId])
@@ -161,14 +161,14 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id String @id
 
   identifier String
   value      String
   expiresAt  DateTime
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([identifier])
   @@index([identifier, expiresAt])
@@ -177,13 +177,13 @@ model Verification {
 }
 
 model TwoFactor {
-  id                      String    @id
+  id String @id
 
-  secret                  String
-  backupCodes             String
+  secret      String
+  backupCodes String
 
-  userId                  String
-  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   verified                Boolean?  @default(true)
   failedVerificationCount Int?      @default(0)
@@ -191,6 +191,7 @@ model TwoFactor {
 
   @@index([userId])
   @@map("twoFactor")
+  @@index([secret])
 }
 
 model Organization {
@@ -222,32 +223,21 @@ model Member {
 }
 
 model Invitation {
-  id             String    @id @default(cuid())
-
+  id             String       @id
+  organizationId String
   email          String
+  role           String?
+  status         String       @default("pending")
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  inviterId      String
 
-  token          String?   @unique
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
-  role           UserRole  @default(employee)
-
-  status         String    @default("pending")
-  expiresAt      DateTime  @map("expires_at")
-  usedAt         DateTime? @map("used_at")
-
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  invitedBy      String?   @map("invited_by")
-  userId         String?   @map("user_id")
-
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  invitedByUser  User? @relation("InvitationInvitedBy", fields: [invitedBy], references: [id])
-  user           User? @relation("InvitationUser", fields: [userId], references: [id])
-
-  @@index([email])
   @@index([organizationId])
-  @@map("invitations")
+  @@index([email])
+  @@map("invitation")
 }
 
 model Jwks {
@@ -256,6 +246,9 @@ model Jwks {
   privateKey String
   createdAt  DateTime
   expiresAt  DateTime?
+
+  alg String?
+  crv String?
 
   @@map("jwks")
 }
@@ -296,6 +289,16 @@ model OauthClient {
   oauthaccesstokens       OauthAccessToken[]
   oauthconsents           OauthConsent[]
 
+  clientDiscoveryId                String?
+  clientCredentialsScopes          String[]              @default([])
+  backchannelLogoutUri             String?
+  backchannelLogoutSessionRequired Boolean?
+  applicationType                  String?
+  jwks                             String?
+  jwksUri                          String?
+  dpopBoundAccessTokens            Boolean?              @default(false)
+  oauthclientresources             OauthClientResource[]
+
   @@unique([clientId])
   @@index([userId])
   @@map("oauthClient")
@@ -318,11 +321,20 @@ model OauthRefreshToken {
   scopes            String[]
   oauthaccesstokens OauthAccessToken[]
 
+  authorizationCodeId     String?
+  resources               String[]
+  requestedUserInfoClaims String[]
+  rotatedAt               DateTime?
+  rotationReplayResponse  String?
+  rotationReplayExpiresAt DateTime?
+  confirmation            Json?
+
   @@unique([token])
   @@index([clientId])
   @@index([sessionId])
   @@index([userId])
   @@map("oauthRefreshToken")
+  @@index([authorizationCodeId])
 }
 
 model OauthAccessToken {
@@ -341,12 +353,19 @@ model OauthAccessToken {
   createdAt         DateTime
   scopes            String[]
 
+  authorizationCodeId     String?
+  resources               String[]
+  requestedUserInfoClaims String[]
+  revoked                 DateTime?
+  confirmation            Json?
+
   @@unique([token])
   @@index([clientId])
   @@index([sessionId])
   @@index([userId])
   @@index([refreshId])
   @@map("oauthAccessToken")
+  @@index([authorizationCodeId])
 }
 
 model OauthConsent {
@@ -360,32 +379,35 @@ model OauthConsent {
   createdAt   DateTime
   updatedAt   DateTime
 
+  resources               String[]
+  requestedUserInfoClaims String[]
+
   @@index([clientId])
   @@index([userId])
   @@map("oauthConsent")
 }
 
 model AuditLog {
-  id              String            @id @default(cuid())
-  timestamp       DateTime          @default(now())
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
 
-  actorUserId     String?
-  actorName       String
-  actorEmail      String
-  actorAvatarUrl  String?
-  actorInitials   String
+  actorUserId    String?
+  actorName      String
+  actorEmail     String
+  actorAvatarUrl String?
+  actorInitials  String
 
-  event           AuditLogEvent
-  targetApp       AuditLogTargetApp
+  event     AuditLogEvent
+  targetApp AuditLogTargetApp
 
-  ipAddress       String?
-  location        String?
+  ipAddress String?
+  location  String?
 
-  status          AuditLogStatus
+  status AuditLogStatus
 
-  createdAt       DateTime          @default(now())
+  createdAt DateTime @default(now())
 
-  actor           User?             @relation(fields: [actorUserId], references: [id])
+  actor User? @relation(fields: [actorUserId], references: [id])
 
   @@index([actorUserId])
   @@index([timestamp])
@@ -395,14 +417,14 @@ model AuditLog {
 }
 
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String
   summary     String
-  isCustom    Boolean  @default(false)
+  isCustom    Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   permissions Permission[]
 
@@ -410,19 +432,19 @@ model Role {
 }
 
 model Permission {
-  id          String   @id @default(cuid())
-  key         String
-  label       String
-  granted     Boolean  @default(false)
+  id      String  @id @default(cuid())
+  key     String
+  label   String
+  granted Boolean @default(false)
 
-  sectionId   String
-  section     PermissionSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId String
+  section   PermissionSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
-  roleId      String
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([roleId, sectionId, key])
   @@index([roleId])
@@ -431,12 +453,12 @@ model Permission {
 }
 
 model PermissionSection {
-  id          String   @id @default(cuid())
-  key         String
-  title       String
+  id    String @id @default(cuid())
+  key   String
+  title String
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   permissions Permission[]
 
@@ -445,30 +467,73 @@ model PermissionSection {
 }
 
 model AuthMethodConfig {
-  id              String           @id @default(cuid())
-  provider        AuthProviderType @unique
-  label           String
-  description     String
-  status          AuthMethodStatus @default(disabled)
-  enrolledUsers   Int              @default(0)
-  lastUpdated     DateTime?
+  id            String           @id @default(cuid())
+  provider      AuthProviderType @unique
+  label         String
+  description   String
+  status        AuthMethodStatus @default(disabled)
+  enrolledUsers Int              @default(0)
+  lastUpdated   DateTime?
 
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("auth_method_config")
 }
 
 model PasswordPolicy {
-  id              String   @id @default(cuid())
-  key             String   @unique
-  label           String
-  description     String
-  value           Json
-  enabled         Boolean  @default(true)
+  id          String  @id @default(cuid())
+  key         String  @unique
+  label       String
+  description String
+  value       Json
+  enabled     Boolean @default(true)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("password_policy")
+}
+
+model OauthResource {
+  id                            String                @id
+  identifier                    String
+  name                          String
+  accessTokenTtl                Int?
+  refreshTokenTtl               Int?
+  signingAlgorithm              String?
+  signingKeyId                  String?
+  allowedScopes                 String[]
+  customClaims                  Json?
+  dpopBoundAccessTokensRequired Boolean?              @default(false)
+  disabled                      Boolean?              @default(false)
+  createdAt                     DateTime?
+  updatedAt                     DateTime?
+  policyVersion                 Int?                  @default(1)
+  metadata                      Json?
+  oauthclientresources          OauthClientResource[]
+
+  @@unique([identifier])
+  @@map("oauthResource")
+}
+
+model OauthClientResource {
+  id            String        @id
+  clientId      String
+  oauthclient   OauthClient   @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  resourceId    String
+  oauthresource OauthResource @relation(fields: [resourceId], references: [identifier], onDelete: Cascade)
+  metadata      Json?
+  createdAt     DateTime?
+
+  @@index([clientId])
+  @@index([resourceId])
+  @@map("oauthClientResource")
+}
+
+model OauthClientAssertion {
+  id        String   @id
+  expiresAt DateTime
+
+  @@map("oauthClientAssertion")
 }
