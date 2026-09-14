@@ -15,6 +15,7 @@ function detectTargetApp(request: Request | undefined): AuditLogTargetApp {
   const origin = request.headers.get("origin") ?? request.headers.get("referer") ?? "";
   if (origin.includes("share.digitalcovet.com")) return "share";
   if (origin.includes("portfolio.digitalcovet.com")) return "portfolio";
+  if (origin.includes("desk.flonion.com")) return "desk";
   return "iam_system";
 }
 

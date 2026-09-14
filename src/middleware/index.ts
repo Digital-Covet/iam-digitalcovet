@@ -4,6 +4,7 @@ const ALLOWED_ORIGINS = [
   "https://iam.digitalcovet.com",
   "https://share.digitalcovet.com",
   "https://portfolio.digitalcovet.com",
+  "https://desk.flonion.com",
   "http://localhost:3000",
   "http://localhost:5173",
 ];

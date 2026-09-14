@@ -314,7 +314,7 @@ async function main() {
   }
 
   // ── Desk OAuth Client ──
-  const deskRedirectUri = "https://desk.digitalcovet.com/api/auth/callback/desk";
+  const deskRedirectUri = "https://desk.flonion.com/api/auth/callback/desk";
   const deskDevRedirectUri = "http://localhost:3000/api/auth/callback/desk";
   const deskPlainSecret = process.env.OAUTH_CLIENT_SECRET_DESK ?? "";
   const deskHashedSecret = hashClientSecret(deskPlainSecret);
@@ -331,7 +331,7 @@ async function main() {
         clientSecret: deskHashedSecret,
         redirectUris: [deskRedirectUri, deskDevRedirectUri],
         postLogoutRedirectUris: [
-          "https://desk.digitalcovet.com",
+          "https://desk.flonion.com",
           "http://localhost:3000",
         ],
         skipConsent: true,
@@ -341,7 +341,7 @@ async function main() {
         responseTypes: ["code"],
         tokenEndpointAuthMethod: "client_secret_post",
         name: "Digital Covet Desk",
-        uri: "https://desk.digitalcovet.com",
+        uri: "https://desk.flonion.com",
       },
     });
     console.log("Created OAuth client: desk");
@@ -353,7 +353,7 @@ async function main() {
       updates.redirectUris = targetUris;
     }
     const targetLogoutUris = [
-      "https://desk.digitalcovet.com",
+      "https://desk.flonion.com",
       "http://localhost:3000",
     ];
     const currentLogoutUris = existingDeskClient.postLogoutRedirectUris ?? [];
