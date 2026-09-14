@@ -12,11 +12,11 @@ export interface PasswordValidationResult {
 }
 
 const validators: Record<string, (password: string, value: string | number | boolean) => boolean> = {
-  min_length: (pw, val) => pw.length >= (val as number),
-  require_uppercase: (pw, val) => (val as boolean) ? /[A-Z]/.test(pw) : true,
-  require_lowercase: (pw, val) => (val as boolean) ? /[a-z]/.test(pw) : true,
-  require_numbers: (pw, val) => (val as boolean) ? /[0-9]/.test(pw) : true,
-  require_special: (pw, val) => (val as boolean) ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
+  min_length: (pw, val) => pw.length >= Number(val),
+  require_uppercase: (pw, val) => val ? /[A-Z]/.test(pw) : true,
+  require_lowercase: (pw, val) => val ? /[a-z]/.test(pw) : true,
+  require_numbers: (pw, val) => val ? /[0-9]/.test(pw) : true,
+  require_special: (pw, val) => val ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
 };
 
 export function validatePassword(
