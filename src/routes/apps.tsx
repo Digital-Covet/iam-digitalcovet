@@ -1,7 +1,7 @@
 import type { Component } from "solid-js";
 import { For } from "solid-js";
 import { query, createAsync, type RouteDefinition } from "@solidjs/router";
-import { AppWindow, Folder, Share2 } from "lucide-solid";
+import { AppWindow, Folder, LayoutDashboard, Share2 } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
 import AppCard from "@/components/apps/AppCard";
@@ -27,6 +27,14 @@ const apps: AppItem[] = [
     icon: Folder,
     accessKey: "Portfolio",
   },
+  {
+    id: "desk",
+    name: "Desk",
+    description: "Desk console. Internal operations dashboard for managing businesses, users, meetings, and support.",
+    url: "https://desk.flonion.com",
+    icon: LayoutDashboard,
+    accessKey: "Desk",
+  },
 ];
 
 const elevatedRoles = new Set(["superadmin", "admin"]);
@@ -51,7 +59,7 @@ const getUserAccess = query(async () => {
 
   const isElevated = elevatedRoles.has(user.role);
   const apps = isElevated
-    ? (["Share", "Portfolio"] as AppAccess[])
+    ? (["Share", "Portfolio", "Desk"] as AppAccess[])
     : ((user.appAccess ?? []) as AppAccess[]);
 
   return { apps, elevated: isElevated };

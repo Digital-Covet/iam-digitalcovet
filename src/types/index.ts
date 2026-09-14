@@ -5,7 +5,7 @@ export type Icon = Component<LucideProps>;
 
 export type UserRole = "SuperAdmin" | "Admin" | "Employee";
 export type MfaStatus = "Enabled" | "Disabled";
-export type AppAccess = "Share" | "Portfolio";
+export type AppAccess = "Share" | "Portfolio" | "Desk";
 export type AvatarTone = "primary" | "neutral";
 
 export interface DirectoryUser {

@@ -1,11 +1,12 @@
 import type { Component } from "solid-js";
 import { For } from "solid-js";
-import { Folder, Share2 } from "lucide-solid";
+import { Folder, LayoutDashboard, Share2 } from "lucide-solid";
 import type { AppAccess, Icon } from "@/types";
 
 const appAccessIcons: Record<AppAccess, Icon> = {
   Share: Share2,
   Portfolio: Folder,
+  Desk: LayoutDashboard,
 };
 
 const AppAccessIcons: Component<{ access: AppAccess[] }> = (props) => (
