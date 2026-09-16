@@ -23,6 +23,13 @@ export const GET = async (event: any) => {
     console.log("[IAM] Token endpoint GET request", { pathname: url.pathname });
   }
 
+  if (url.pathname.includes("/oauth2/userinfo")) {
+    console.log("[IAM] Userinfo GET request", {
+      pathname: url.pathname,
+      hasAuthHeader: !!request.headers.get("authorization"),
+    });
+  }
+
   if (url.pathname.includes("/oauth2/end-session")) {
     console.log("[IAM] End-session GET request", {
       pathname: url.pathname,
@@ -34,6 +41,21 @@ export const GET = async (event: any) => {
 
   try {
     const response = await handlers.GET(event);
+
+    if (url.pathname.includes("/oauth2/userinfo")) {
+      console.log("[IAM] Userinfo GET response", {
+        status: response.status,
+        ok: response.ok,
+      });
+      if (!response.ok) {
+        const cloned = response.clone();
+        const errorBody = await cloned.text();
+        console.error("[IAM] Userinfo FAILED", {
+          status: response.status,
+          error: errorBody.substring(0, 300),
+        });
+      }
+    }
 
     if (url.pathname.includes("/oauth2/end-session")) {
       console.log("[IAM] End-session GET response", {
@@ -93,9 +115,6 @@ export const POST = async (event: any) => {
       codeVerifierLength: body.code_verifier?.length,
       hasClientSecret: !!body.client_secret,
     });
-
-    // TEMPORARY VERBOSE LOGGING (EXPOSES secrets): log full request body for debugging
-    console.log("[IAM] Token exchange request full body:", body);
   }
 
   if (url.pathname.includes("/oauth2/end-session")) {
