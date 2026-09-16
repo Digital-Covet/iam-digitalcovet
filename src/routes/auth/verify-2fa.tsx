@@ -9,22 +9,6 @@ export default function Verify2FAPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  onMount(() => {
-    void (async () => {
-      try {
-        const session = await authClient.getSession();
-        if (session.data?.session) {
-          const redirectParam = Array.isArray(searchParams.redirect)
-            ? searchParams.redirect[0]
-            : searchParams.redirect;
-          navigate(redirectParam || "/dashboard", { replace: true });
-        }
-      } catch {
-        // Session check failed — stay on 2FA page
-      }
-    })();
-  });
-
   const search = typeof window !== "undefined" ? window.location.search : "";
   const isOAuthFlow = !!(
     search &&
@@ -35,6 +19,29 @@ export default function Verify2FAPage() {
   const oauthRedirectUrl = isOAuthFlow
     ? `${window.location.origin}/api/auth/oauth2/authorize${search}`
     : "";
+
+  onMount(() => {
+    void (async () => {
+      try {
+        const session = await authClient.getSession();
+        if (session.data?.session) {
+          // OAuth flow: resume authorize so the client gets a `code`.
+          // Navigating to /dashboard here would drop client_id/response_type/
+          // code_challenge and the desk would never receive its callback.
+          if (isOAuthFlow && oauthRedirectUrl) {
+            window.location.replace(oauthRedirectUrl);
+            return;
+          }
+          const redirectParam = Array.isArray(searchParams.redirect)
+            ? searchParams.redirect[0]
+            : searchParams.redirect;
+          navigate(redirectParam || "/dashboard", { replace: true });
+        }
+      } catch {
+        // Session check failed — stay on 2FA page
+      }
+    })();
+  });
 
   const redirectParam = Array.isArray(searchParams.redirect)
     ? searchParams.redirect[0]
@@ -56,8 +63,7 @@ export default function Verify2FAPage() {
             </p>
           </div>
           <TwoFactorVerify
-            redirectTo={isOAuthFlow ? "" : standardRedirect}
-            onVerified={isOAuthFlow ? () => window.location.replace(oauthRedirectUrl) : undefined}
+            redirectTo={isOAuthFlow ? oauthRedirectUrl : standardRedirect}
           />
         </div>
       </div>

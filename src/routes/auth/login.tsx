@@ -10,7 +10,10 @@ import { pageMetadata } from "@/lib/seo";
 const ALLOWED_REDIRECTS = new Set([
   "https://share.digitalcovet.com/dashboard",
   "https://portfolio.digitalcovet.com/dashboard",
+  "https://desk.flonion.com/",
+  "https://desk.flonion.com/dashboard",
   "http://localhost:3000/dashboard",
+  "http://localhost:3000/",
   "http://localhost:5173/dashboard",
 ]);
 
@@ -40,6 +43,22 @@ export default function LoginForm() {
       try {
         const session = await authClient.getSession();
         if (session.data?.session) {
+          // OAuth flow in progress (authorize query preserved): resume
+          // authorize so the client gets a `code` instead of dropping to
+          // the IAM dashboard and starving desk of its callback.
+          if (typeof window !== "undefined") {
+            const search = window.location.search;
+            const isOAuthFlow =
+              search.includes("client_id=") &&
+              search.includes("response_type=") &&
+              search.includes("code_challenge=");
+            if (isOAuthFlow) {
+              window.location.replace(
+                `${window.location.origin}/api/auth/oauth2/authorize${search}`,
+              );
+              return;
+            }
+          }
           const redirect = safeRedirectUrl();
           if (redirect) {
             window.location.replace(redirect);

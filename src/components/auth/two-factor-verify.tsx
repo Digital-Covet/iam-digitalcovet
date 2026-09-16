@@ -112,6 +112,7 @@ export default function TwoFactorVerify({
         type: "success",
       });
       onVerified?.();
+      if (!redirectTo) return;
       if (redirectTo.startsWith("http")) {
         window.location.replace(redirectTo);
       } else {
