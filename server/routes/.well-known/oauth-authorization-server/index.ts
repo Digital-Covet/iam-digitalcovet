@@ -6,6 +6,8 @@ const handler = oauthProviderAuthServerMetadata(auth);
 const ALLOWED_ORIGINS = [
   "https://portfolio.digitalcovet.com",
   "https://share.digitalcovet.com",
+  "https://desk.flonion.com",
+  "https://iam.digitalcovet.com",
   "http://localhost:3000",
   "http://localhost:5173",
 ];
