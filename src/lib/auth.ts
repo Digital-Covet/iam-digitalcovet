@@ -7,11 +7,34 @@ import { oauthProvider } from "@better-auth/oauth-provider";
 import { prisma } from "@/db";
 import { sendEmail } from "@/services/email";
 import { renderDeleteVerificationEmail } from "@/services/email-templates";
+import { CLIENT_APPS, effectiveAppAccess } from "./app-access";
 import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
 import { createAuditLog } from "./audit";
 
 const storeBackupCodes =
   process.env.NODE_ENV === "development" ? "plain" : "encrypted";
+
+/**
+ * The client and user of a stored authorization code, or null for any other
+ * verification row (email OTPs, reset tokens, ...).
+ */
+function parseAuthorizationCode(
+  value: unknown,
+): { clientId: string; userId: string } | null {
+  if (typeof value !== "string" || !value.includes("authorization_code")) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(value);
+    if (parsed?.type !== "authorization_code") return null;
+    return {
+      clientId: String(parsed.query?.client_id ?? ""),
+      userId: String(parsed.userId ?? ""),
+    };
+  } catch {
+    return null;
+  }
+}
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
@@ -27,6 +50,38 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  databaseHooks: {
+    verification: {
+      create: {
+        // Every authorization code the OAuth provider issues is stored through
+        // here, whichever path issued it (authorize, consent, continue, or the
+        // resume after login/2FA), with the client and the user in `value`. So
+        // this is the one place a user can be refused an app they may not use.
+        before: async (verification) => {
+          const code = parseAuthorizationCode(verification.value);
+          if (!code) return;
+          const app = CLIENT_APPS[code.clientId];
+          const user = app
+            ? await prisma.user.findUnique({
+                where: { id: code.userId },
+                select: { role: true, appAccess: true },
+              })
+            : null;
+          if (!app || !user || !effectiveAppAccess(user).includes(app)) {
+            console.warn("[Auth] authorization refused", {
+              clientId: code.clientId,
+              userId: code.userId,
+            });
+            throw new APIError("FORBIDDEN", {
+              message: app
+                ? `Your account does not have access to ${app}.`
+                : "This application is not available.",
+            });
+          }
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -255,6 +310,11 @@ export const auth = betterAuth({
       scopes: ["openid", "profile", "email", "offline_access"],
       cachedTrustedClients: new Set(["share", "portfolio", "desk"]),
       storeClientSecret: "hashed",
+      // Lets each app confirm access on its side too (the desk refuses a
+      // sign-in without "Desk" here), read fresh from the user on every call.
+      customUserInfoClaims: ({ user }) => ({
+        app_access: effectiveAppAccess(user),
+      }),
     }),
   ],
 });
