@@ -7,6 +7,7 @@ import AuthGuard from "@/components/auth/auth-guard";
 import AppCard from "@/components/apps/AppCard";
 import type { AppItem, AppAccess } from "@/types";
 import { prisma } from "@/db";
+import { ELEVATED_ROLES, effectiveAppAccess } from "@/lib/app-access";
 import { auth } from "@/lib/auth";
 import { getRequestEvent } from "solid-js/web";
 
@@ -37,8 +38,6 @@ const apps: AppItem[] = [
   },
 ];
 
-const elevatedRoles = new Set(["superadmin", "admin"]);
-
 const getUserAccess = query(async () => {
   "use server";
   const event = getRequestEvent();
@@ -57,12 +56,10 @@ const getUserAccess = query(async () => {
 
   if (!user) return { apps: [] as AppAccess[], elevated: false };
 
-  const isElevated = elevatedRoles.has(user.role);
-  const apps = isElevated
-    ? (["Share", "Portfolio", "Desk"] as AppAccess[])
-    : ((user.appAccess ?? []) as AppAccess[]);
-
-  return { apps, elevated: isElevated };
+  return {
+    apps: effectiveAppAccess(user),
+    elevated: ELEVATED_ROLES.has(user.role),
+  };
 }, "userAppAccess");
 
 export const route = {
