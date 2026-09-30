@@ -1,14 +1,32 @@
 import type { Component } from "solid-js";
-import { For, Show } from "solid-js";
+import { For, Show, createSignal } from "solid-js";
 import { MonitorSmartphone, MapPin, Clock } from "lucide-solid";
+import { authToaster } from "@/components/auth/auth-toaster";
+import { revokeOwnSession } from "@/lib/account-settings";
 import type { ActiveSession } from "@/types";
+import { createAccountAction } from "./account-action";
 
 interface ActiveSessionsListProps {
   sessions: ActiveSession[];
-  currentSessionId?: string;
+  onChanged: () => void;
 }
 
 const ActiveSessionsList: Component<ActiveSessionsListProps> = (props) => {
+  const [revokingId, setRevokingId] = createSignal<string | null>(null);
+  const { pending, error, run } = createAccountAction();
+
+  const revoke = async (session: ActiveSession) => {
+    setRevokingId(session.id);
+    const revoked = await run(() => revokeOwnSession(session.id));
+    setRevokingId(null);
+    authToaster.create(
+      revoked
+        ? { title: `Signed out ${session.device}.`, type: "success" }
+        : { title: error() ?? "Could not revoke that session.", type: "error" },
+    );
+    if (revoked) props.onChanged();
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -47,7 +65,7 @@ const ActiveSessionsList: Component<ActiveSessionsListProps> = (props) => {
                   <p class="truncate text-sm font-medium text-foreground">
                     {session.device}
                   </p>
-                  <Show when={session.id === props.currentSessionId}>
+                  <Show when={session.isCurrent}>
                     <span class="shrink-0 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600">
                       Current
                     </span>
@@ -67,12 +85,15 @@ const ActiveSessionsList: Component<ActiveSessionsListProps> = (props) => {
                   </span>
                 </div>
               </div>
-              <Show when={session.id !== props.currentSessionId}>
+              <Show when={!session.isCurrent}>
                 <button
                   type="button"
-                  class="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                  aria-label={`Revoke session on ${session.device}`}
+                  disabled={pending()}
+                  onClick={() => revoke(session)}
+                  class="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                 >
-                  Revoke
+                  {revokingId() === session.id ? "Revoking..." : "Revoke"}
                 </button>
               </Show>
             </div>

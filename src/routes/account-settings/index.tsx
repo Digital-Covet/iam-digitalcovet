@@ -1,73 +1,23 @@
 import type { Component } from "solid-js";
-import { Show, createSignal, onMount } from "solid-js";
+import { Show, Suspense } from "solid-js";
+import { createAsync, revalidate, type RouteDefinition } from "@solidjs/router";
 import { Settings } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
+import { AuthToaster } from "@/components/auth/auth-toaster";
 import ProfileCard from "@/components/account-settings/ProfileCard";
 import SecurityCard from "@/components/account-settings/SecurityCard";
 import ActiveSessionsList from "@/components/account-settings/ActiveSessionsList";
-import type { UserProfile, ActiveSession } from "@/types";
-import { authClient } from "@/lib/auth-client";
+import { getAccountSettings } from "@/lib/account-settings";
+import { getPasswordPolicies } from "@/lib/password-policies";
+
+export const route = {
+  preload: () => Promise.all([getAccountSettings(), getPasswordPolicies()]),
+} satisfies RouteDefinition;
 
 const AccountSettingsPage: Component = () => {
-  const [loading, setLoading] = createSignal(true);
-  const [user, setUser] = createSignal<UserProfile | null>(null);
-  const [sessions, setSessions] = createSignal<ActiveSession[]>([]);
-
-  onMount(() => {
-    void loadData();
-  });
-
-  const loadData = async () => {
-    try {
-      console.log("[AccountSettings] Fetching session...");
-      const sessionResult = await Promise.race([
-        authClient.getSession(),
-        new Promise<null>((_, reject) => setTimeout(() => reject(new Error("Session timeout")), 10000)),
-      ]);
-      
-      const session = sessionResult?.data?.session;
-      console.log("[AccountSettings] Session result:", { hasSession: !!session, userId: session?.userId });
-
-      if (!session?.userId) {
-        setLoading(false);
-        return;
-      }
-
-      const userData = await fetchUser(session.userId);
-      console.log("[AccountSettings] User data:", { hasUser: !!userData?.user });
-      
-      if (userData) {
-        setUser(userData.user);
-        setSessions(userData.sessions);
-      }
-    } catch (error) {
-      console.error("[AccountSettings] Failed to load account data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUser = async (userId: string) => {
-    try {
-      console.log("[AccountSettings] Fetching user data for userId:", userId);
-      const response = await fetch("/api/account-settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      console.log("[AccountSettings] API response status:", response.status);
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("[AccountSettings] API error:", errorText);
-        return null;
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("[AccountSettings] Fetch error:", error);
-      return null;
-    }
-  };
+  const account = createAsync(() => getAccountSettings());
+  const refresh = () => void revalidate(getAccountSettings.key);
 
   return (
     <AuthGuard>
@@ -88,27 +38,26 @@ const AccountSettingsPage: Component = () => {
           </div>
         </div>
 
-        <Show when={!loading()} fallback={<div class="text-muted-foreground">Loading...</div>}>
-          <Show when={user()}>
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <ProfileCard user={user()!} />
-              <SecurityCard
-                twoFactorEnabled={user()!.twoFactorEnabled}
-                userId={user()!.id}
-              />
-            </div>
+        <Suspense fallback={<div class="text-muted-foreground">Loading...</div>}>
+          <Show
+            when={account()}
+            fallback={<div class="text-muted-foreground">Unable to load account data.</div>}
+          >
+            {(data) => (
+              <>
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <ProfileCard user={data().user} onChanged={refresh} />
+                  <SecurityCard security={data().security} onChanged={refresh} />
+                </div>
 
-            <div class="mt-6">
-              <ActiveSessionsList
-                sessions={sessions()}
-                currentSessionId={sessions().find((s) => s.isCurrent)?.id}
-              />
-            </div>
+                <div class="mt-6">
+                  <ActiveSessionsList sessions={data().sessions} onChanged={refresh} />
+                </div>
+              </>
+            )}
           </Show>
-          <Show when={!user()}>
-            <div class="text-muted-foreground">Unable to load account data.</div>
-          </Show>
-        </Show>
+        </Suspense>
+        <AuthToaster />
       </AppLayout>
     </AuthGuard>
   );

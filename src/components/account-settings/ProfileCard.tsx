@@ -1,13 +1,18 @@
 import type { Component } from "solid-js";
-import { Show } from "solid-js";
+import { Show, createSignal } from "solid-js";
 import { User, Mail, Briefcase, Calendar } from "lucide-solid";
 import type { UserProfile } from "@/types";
+import AccountDialog from "./AccountDialog";
+import EditProfileForm from "./EditProfileForm";
 
 interface ProfileCardProps {
   user: UserProfile;
+  onChanged: () => void;
 }
 
 const ProfileCard: Component<ProfileCardProps> = (props) => {
+  const [editing, setEditing] = createSignal(false);
+
   const formattedDate = () => {
     const date = new Date(props.user.createdAt);
     return date.toLocaleDateString("en-US", {
@@ -61,11 +66,28 @@ const ProfileCard: Component<ProfileCardProps> = (props) => {
       <div class="mt-6 border-t border-border pt-4">
         <button
           type="button"
+          onClick={() => setEditing(true)}
           class="w-full rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           Edit Profile
         </button>
       </div>
+
+      <AccountDialog
+        open={editing()}
+        onOpenChange={setEditing}
+        title="Edit profile"
+        description="Update the name shown across Digital Covet apps."
+      >
+        <EditProfileForm
+          name={props.user.name}
+          email={props.user.email}
+          onSaved={() => {
+            setEditing(false);
+            props.onChanged();
+          }}
+        />
+      </AccountDialog>
     </div>
   );
 };

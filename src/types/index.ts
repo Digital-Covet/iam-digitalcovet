@@ -144,11 +144,17 @@ export interface UserProfile {
   role: UserRole;
   department: string | null;
   avatarUrl: string | null;
-  twoFactorEnabled: boolean;
   createdAt: string;
+}
+
+export interface AccountSecurity {
+  twoFactorEnabled: boolean;
+  passwordChangedAt: string | null;
+  backupCodesRemaining: number | null;
 }
 
 export interface AccountSettingsData {
   user: UserProfile;
-  activeSessions: ActiveSession[];
+  security: AccountSecurity;
+  sessions: ActiveSession[];
 }

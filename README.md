@@ -101,8 +101,9 @@ src/routes/
   consent.tsx                  # OAuth2 consent screen
   api/[...auth].ts             # Better Auth API catch-all route
   api/front-channel-logout.ts  # Cross-app logout notification endpoint
-  api/account-settings.ts      # Account settings API
 ```
+
+Account settings data and actions are session-scoped server functions in `src/lib/account-settings.ts`.
 
 ### Authentication Flow
 
