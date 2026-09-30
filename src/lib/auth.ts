@@ -10,9 +10,13 @@ import { renderDeleteVerificationEmail } from "@/services/email-templates";
 import { CLIENT_APPS, effectiveAppAccess } from "./app-access";
 import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
 import { createAuditLog } from "./audit";
+import { loadPasswordPolicies } from "./password-policies";
+import { validatePassword } from "./password-validation";
 
 const storeBackupCodes =
   process.env.NODE_ENV === "development" ? "plain" : "encrypted";
+
+const PASSWORD_SETTING_PATHS = new Set(["/reset-password", "/change-password"]);
 
 /**
  * The client and user of a stored authorization code, or null for any other
@@ -162,29 +166,15 @@ export const auth = betterAuth({
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === "/reset-password") {
+      if (PASSWORD_SETTING_PATHS.has(ctx.path)) {
         const newPassword: string | undefined = ctx.body?.newPassword;
         if (newPassword) {
-          const policies = await prisma.passwordPolicy.findMany({
-            where: { enabled: true },
-          });
-
-          const validators: Record<string, (pw: string, val: string | number | boolean) => boolean> = {
-            min_length: (pw, val) => pw.length >= Number(val),
-            require_uppercase: (pw, val) => val ? /[A-Z]/.test(pw) : true,
-            require_lowercase: (pw, val) => val ? /[a-z]/.test(pw) : true,
-            require_numbers: (pw, val) => val ? /[0-9]/.test(pw) : true,
-            require_special: (pw, val) => val ? /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(pw) : true,
-          };
-
-          for (const policy of policies) {
-            const validator = validators[policy.key];
-            const policyValue: string | number | boolean = policy.value;
-            if (validator && !validator(newPassword, policyValue)) {
-              throw new APIError("BAD_REQUEST", {
-                message: `Password does not meet policy: ${policy.label}`,
-              });
-            }
+          const policies = await loadPasswordPolicies();
+          const failed = validatePassword(newPassword, policies).checks.find((c) => !c.passed);
+          if (failed) {
+            throw new APIError("BAD_REQUEST", {
+              message: `Password does not meet policy: ${failed.label}`,
+            });
           }
         }
       }

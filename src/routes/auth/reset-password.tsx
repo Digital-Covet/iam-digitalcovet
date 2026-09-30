@@ -1,6 +1,6 @@
 import { Field } from "@ark-ui/solid/field";
 import { PasswordInput } from "@ark-ui/solid/password-input";
-import { A, useNavigate, query, createAsync } from "@solidjs/router";
+import { A, useNavigate, createAsync } from "@solidjs/router";
 import { Meta, Title } from "@solidjs/meta";
 import { EyeIcon, EyeOffIcon } from "lucide-solid";
 import { createSignal, onMount, Show } from "solid-js";
@@ -10,24 +10,11 @@ import { pageMetadata } from "@/lib/seo";
 import { validatePassword } from "@/lib/password-validation";
 import PasswordRequirements from "@/components/auth/PasswordRequirements";
 import type { PasswordPolicy } from "@/types";
-import { prisma } from "@/db";
-
-const getPolicies = query(async () => {
-  "use server";
-  const policies = await prisma.passwordPolicy.findMany({ orderBy: { createdAt: "asc" } });
-  return policies.map((p) => ({
-    id: p.id,
-    key: p.key,
-    label: p.label,
-    description: p.description,
-    value: p.value as string | number | boolean,
-    enabled: p.enabled,
-  }));
-}, "resetPolicies");
+import { getPasswordPolicies } from "@/lib/password-policies";
 
 export default function ResetPasswordForm() {
   const navigate = useNavigate();
-  const policies = createAsync(() => getPolicies());
+  const policies = createAsync(() => getPasswordPolicies());
   const [password, setPassword] = createSignal("");
   const [confirmPassword, setConfirmPassword] = createSignal("");
   const [resetToken, setResetToken] = createSignal<string | null>(null);

@@ -1,32 +1,19 @@
 import type { Component } from "solid-js";
 import { createSignal, createEffect } from "solid-js";
-import { A, query, createAsync, type RouteDefinition } from "@solidjs/router";
+import { A, createAsync, type RouteDefinition } from "@solidjs/router";
 import { ArrowLeft } from "lucide-solid";
 import AppLayout from "@/components/AppLayout";
 import AuthGuard from "@/components/auth/auth-guard";
 import PasswordPolicyCard from "@/components/auth-settings/PasswordPolicyCard";
 import type { PasswordPolicy } from "@/types";
-import { prisma } from "@/db";
-
-const getPolicies = query(async () => {
-  "use server";
-  const policies = await prisma.passwordPolicy.findMany({ orderBy: { createdAt: "asc" } });
-  return policies.map((p) => ({
-    id: p.id,
-    key: p.key,
-    label: p.label,
-    description: p.description,
-    value: p.value as string | number | boolean,
-    enabled: p.enabled,
-  }));
-}, "passwordPolicies");
+import { getPasswordPolicies } from "@/lib/password-policies";
 
 export const route = {
-  preload: () => getPolicies(),
+  preload: () => getPasswordPolicies(),
 } satisfies RouteDefinition;
 
 const PasswordPolicyPage: Component = () => {
-  const data = createAsync(() => getPolicies());
+  const data = createAsync(() => getPasswordPolicies());
   const [policies, setPolicies] = createSignal<PasswordPolicy[]>([]);
 
   createEffect(() => {
