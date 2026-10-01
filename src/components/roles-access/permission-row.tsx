@@ -31,11 +31,17 @@ export function PermissionRow(props: { permission: RolePermission }) {
   return (
     <li class="flex min-h-9 items-center justify-between gap-3 px-4 py-2 hover:bg-primary/5">
       <div class="flex min-w-0 flex-wrap items-center gap-2">
-        <span class="text-[13.5px] leading-[1.45] text-foreground">{props.permission.label}</span>
-        {props.permission.elevated && <StatusPill tone="warning" label="Elevated" />}
+        <span class="text-[13.5px] leading-[1.45] text-foreground">
+          {props.permission.label}
+        </span>
+        {props.permission.elevated && (
+          <StatusPill tone="warning" label="Elevated" />
+        )}
       </div>
       <div class="flex shrink-0 items-center gap-3">
-        <code class="hidden font-mono text-xs text-foreground-muted sm:inline">{props.permission.key}</code>
+        <code class="hidden font-mono text-xs text-foreground-muted sm:inline">
+          {props.permission.key}
+        </code>
         <div class="w-36 sm:flex sm:justify-end">
           <AccessIndicator access={props.permission.access} />
         </div>

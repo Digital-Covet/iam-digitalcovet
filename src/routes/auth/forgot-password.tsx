@@ -7,8 +7,14 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <Title>{pageMetadata.forgotPassword.title}</Title>
-      <Meta name="description" content={pageMetadata.forgotPassword.description} />
-      <AuthShell title="Reset your password" subtitle="We'll email you a secure reset link">
+      <Meta
+        name="description"
+        content={pageMetadata.forgotPassword.description}
+      />
+      <AuthShell
+        title="Reset your password"
+        subtitle="We'll email you a secure reset link"
+      >
         <ForgotPasswordForm />
       </AuthShell>
     </>

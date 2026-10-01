@@ -1,22 +1,25 @@
-import { auth } from "@/lib/auth";
+import type { APIEvent } from "@solidjs/start/server";
 import { toSolidStartHandler } from "better-auth/solid-start";
+import { auth } from "@/lib/auth";
 import { notifyFrontChannelLogout } from "@/lib/front-channel-logout";
 
 const handlers = toSolidStartHandler(auth);
 
-function decodeIdTokenHint(idTokenHint: string): { sub?: string; sid?: string } | null {
-	try {
-		const parts = idTokenHint.split(".");
-		if (parts.length !== 3) return null;
-		const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
-		return { sub: payload.sub, sid: payload.sid };
-	} catch {
-		return null;
-	}
+function decodeIdTokenHint(
+  idTokenHint: string,
+): { sub?: string; sid?: string } | null {
+  try {
+    const parts = idTokenHint.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+    return { sub: payload.sub, sid: payload.sid };
+  } catch {
+    return null;
+  }
 }
 
-export const GET = async (event: any) => {
-  const request = event.request as Request;
+export const GET = async (event: APIEvent) => {
+  const request = event.request;
   const url = new URL(request.url);
 
   if (url.pathname.includes("/oauth2/token")) {
@@ -33,9 +36,13 @@ export const GET = async (event: any) => {
   if (url.pathname.includes("/oauth2/end-session")) {
     console.log("[IAM] End-session GET request", {
       pathname: url.pathname,
-      id_token_hint: url.searchParams.get("id_token_hint") ? "present" : "missing",
+      id_token_hint: url.searchParams.get("id_token_hint")
+        ? "present"
+        : "missing",
       client_id: url.searchParams.get("client_id"),
-      post_logout_redirect_uri: url.searchParams.get("post_logout_redirect_uri"),
+      post_logout_redirect_uri: url.searchParams.get(
+        "post_logout_redirect_uri",
+      ),
     });
   }
 
@@ -68,13 +75,21 @@ export const GET = async (event: any) => {
         if (idTokenHint) {
           const decoded = decodeIdTokenHint(idTokenHint);
           if (decoded?.sub) {
-            console.log("[IAM] Triggering front-channel logout for end-session GET", {
-              userId: decoded.sub,
-              sessionId: decoded.sid,
-            });
-            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch((error) => {
-              console.error("[IAM] Front-channel logout notification failed:", error);
-            });
+            console.log(
+              "[IAM] Triggering front-channel logout for end-session GET",
+              {
+                userId: decoded.sub,
+                sessionId: decoded.sid,
+              },
+            );
+            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch(
+              (error) => {
+                console.error(
+                  "[IAM] Front-channel logout notification failed:",
+                  error,
+                );
+              },
+            );
           }
         }
       }
@@ -90,8 +105,8 @@ export const GET = async (event: any) => {
   }
 };
 
-export const POST = async (event: any) => {
-  const request = event.request as Request;
+export const POST = async (event: APIEvent) => {
+  const request = event.request;
   const url = new URL(request.url);
 
   if (url.pathname.includes("/oauth2/token")) {
@@ -160,13 +175,21 @@ export const POST = async (event: any) => {
         if (idTokenHint) {
           const decoded = decodeIdTokenHint(idTokenHint);
           if (decoded?.sub) {
-            console.log("[IAM] Triggering front-channel logout for end-session", {
-              userId: decoded.sub,
-              sessionId: decoded.sid,
-            });
-            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch((error) => {
-              console.error("[IAM] Front-channel logout notification failed:", error);
-            });
+            console.log(
+              "[IAM] Triggering front-channel logout for end-session",
+              {
+                userId: decoded.sub,
+                sessionId: decoded.sid,
+              },
+            );
+            notifyFrontChannelLogout(decoded.sub, decoded.sid).catch(
+              (error) => {
+                console.error(
+                  "[IAM] Front-channel logout notification failed:",
+                  error,
+                );
+              },
+            );
           }
         }
       }

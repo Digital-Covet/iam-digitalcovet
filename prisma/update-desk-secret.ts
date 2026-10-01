@@ -3,8 +3,13 @@ import { createHash } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
+}
+
 const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
 });
 
 const prisma = new PrismaClient({ adapter });
@@ -27,17 +32,16 @@ async function main() {
     "https://desk.flonion.com/api/auth/callback/desk",
     "http://localhost:3000/api/auth/callback/desk",
   ];
-  const deskLogoutUris = [
-    "https://desk.flonion.com",
-    "http://localhost:3000",
-  ];
+  const deskLogoutUris = ["https://desk.flonion.com", "http://localhost:3000"];
 
   const client = await prisma.oauthClient.findUnique({
     where: { clientId: "desk" },
   });
 
   if (!client) {
-    console.error("OAuth client 'desk' not found in database. Run the full seed first.");
+    console.error(
+      "OAuth client 'desk' not found in database. Run the full seed first.",
+    );
     process.exit(1);
   }
 
@@ -51,7 +55,9 @@ async function main() {
     },
   });
 
-  console.log("Updated OAuth client 'desk': secret hash, redirect URIs, logout URIs");
+  console.log(
+    "Updated OAuth client 'desk': secret hash, redirect URIs, logout URIs",
+  );
 }
 
 main()

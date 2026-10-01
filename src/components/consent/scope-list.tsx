@@ -12,11 +12,18 @@ function ScopeItem(props: { scope: string }) {
   const definition = () => describeScope(props.scope);
 
   return (
-    <Accordion.Item value={props.scope} class="border-b border-border last:border-b-0">
+    <Accordion.Item
+      value={props.scope}
+      class="border-b border-border last:border-b-0"
+    >
       <Accordion.ItemTrigger class="flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:outline-ring">
         <span class="min-w-0 flex-1">
-          <span class="block text-[13.5px] font-medium">{definition().label}</span>
-          <span class="block text-xs text-foreground-muted">{definition().summary}</span>
+          <span class="block text-[13.5px] font-medium">
+            {definition().label}
+          </span>
+          <span class="block text-xs text-foreground-muted">
+            {definition().summary}
+          </span>
         </span>
         <span
           class={`rounded border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] ${CATEGORY_CLASS[definition().category]}`}

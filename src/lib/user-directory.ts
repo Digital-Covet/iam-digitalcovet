@@ -3,15 +3,34 @@ import UserX from "lucide-solid/icons/user-x";
 import Users from "lucide-solid/icons/users";
 import type { SelectOption } from "@/components/ui/filter-select";
 import { ALL_APPS } from "@/lib/app-access";
-import type { DirectoryUser, StatCardData, UserDraft, UserFilters, UserRole } from "@/types";
+import type {
+  DirectoryUser,
+  StatCardData,
+  UserDraft,
+  UserFilters,
+  UserRole,
+} from "@/types";
 
-export const EMPTY_FILTERS: UserFilters = { query: "", role: "", app: "", status: "" };
+export const EMPTY_FILTERS: UserFilters = {
+  query: "",
+  role: "",
+  app: "",
+  status: "",
+};
 
 export function hasActiveFilters(filters: UserFilters): boolean {
-  return filters.query.trim() !== "" || filters.role !== "" || filters.app !== "" || filters.status !== "";
+  return (
+    filters.query.trim() !== "" ||
+    filters.role !== "" ||
+    filters.app !== "" ||
+    filters.status !== ""
+  );
 }
 
-function matchesStatus(user: DirectoryUser, status: UserFilters["status"]): boolean {
+function matchesStatus(
+  user: DirectoryUser,
+  status: UserFilters["status"],
+): boolean {
   switch (status) {
     case "active":
       return !user.banned;
@@ -24,11 +43,16 @@ function matchesStatus(user: DirectoryUser, status: UserFilters["status"]): bool
   }
 }
 
-export function filterUsers(users: DirectoryUser[], filters: UserFilters): DirectoryUser[] {
+export function filterUsers(
+  users: DirectoryUser[],
+  filters: UserFilters,
+): DirectoryUser[] {
   const query = filters.query.trim().toLowerCase();
   return users.filter(
     (user) =>
-      (query === "" || user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query)) &&
+      (query === "" ||
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query)) &&
       (filters.role === "" || user.role === filters.role) &&
       (filters.app === "" || user.appAccess.includes(filters.app)) &&
       matchesStatus(user, filters.status),
@@ -37,11 +61,16 @@ export function filterUsers(users: DirectoryUser[], filters: UserFilters): Direc
 
 export function buildDirectoryStats(users: DirectoryUser[]): StatCardData[] {
   const enrolled = users.filter((user) => user.mfaStatus === "Enabled").length;
-  const mfaShare = users.length === 0 ? 0 : Math.round((enrolled / users.length) * 100);
+  const mfaShare =
+    users.length === 0 ? 0 : Math.round((enrolled / users.length) * 100);
   return [
     { label: "Total Users", value: users.length.toLocaleString(), icon: Users },
     { label: "2FA Enrolled", value: `${mfaShare}%`, icon: ShieldCheck },
-    { label: "Banned", value: users.filter((user) => user.banned).length.toLocaleString(), icon: UserX },
+    {
+      label: "Banned",
+      value: users.filter((user) => user.banned).length.toLocaleString(),
+      icon: UserX,
+    },
   ];
 }
 
@@ -95,7 +124,10 @@ export interface DirectoryActor {
 }
 
 /** Mirrors the server rule: only a superadmin may touch another superadmin. */
-export function canManageUser(actor: DirectoryActor, target: DirectoryUser): boolean {
+export function canManageUser(
+  actor: DirectoryActor,
+  target: DirectoryUser,
+): boolean {
   return actor.role === "SuperAdmin" || target.role !== "SuperAdmin";
 }
 
@@ -120,5 +152,7 @@ export function toUsersCsv(users: DirectoryUser[]): string {
     user.appAccess.join(" | "),
     user.banned ? "Banned" : "Active",
   ]);
-  return [CSV_HEADERS, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\r\n");
+  return [CSV_HEADERS, ...rows]
+    .map((row) => row.map(escapeCsvCell).join(","))
+    .join("\r\n");
 }

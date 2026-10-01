@@ -2,13 +2,17 @@ import Briefcase from "lucide-solid/icons/briefcase";
 import Layers from "lucide-solid/icons/layers";
 import Share2 from "lucide-solid/icons/share-2";
 import { For } from "solid-js";
-import { StatusPill } from "@/components/ui/status-pill";
 import { AppAvatar } from "@/components/ui/avatar";
+import { StatusPill } from "@/components/ui/status-pill";
 import { AppTooltip } from "@/components/ui/tooltip";
 import { ALL_APPS } from "@/lib/app-access";
 import type { AppAccess, DirectoryUser, Icon, UserRole } from "@/types";
 
-const APP_ICONS: Record<AppAccess, Icon> = { Share: Share2, Portfolio: Briefcase, Desk: Layers };
+const APP_ICONS: Record<AppAccess, Icon> = {
+  Share: Share2,
+  Portfolio: Briefcase,
+  Desk: Layers,
+};
 
 const AVATAR_TONE: Record<DirectoryUser["avatarTone"], string> = {
   primary: "bg-primary/10 text-primary dark:text-red-400",
@@ -24,10 +28,19 @@ const ROLE_TONE: Record<UserRole, string> = {
 export function IdentityCell(props: { user: DirectoryUser }) {
   return (
     <span class="flex min-w-0 items-center gap-2.5">
-      <AppAvatar initials={props.user.initials} label={props.user.name} size="xs" toneClass={AVATAR_TONE[props.user.avatarTone]} />
+      <AppAvatar
+        initials={props.user.initials}
+        label={props.user.name}
+        size="xs"
+        toneClass={AVATAR_TONE[props.user.avatarTone]}
+      />
       <span class="min-w-0 text-left">
-        <span class="block truncate text-[13.5px] font-medium leading-tight">{props.user.name}</span>
-        <span class="block truncate font-mono text-xs leading-tight text-foreground-muted">{props.user.email}</span>
+        <span class="block truncate text-[13.5px] font-medium leading-tight">
+          {props.user.name}
+        </span>
+        <span class="block truncate font-mono text-xs leading-tight text-foreground-muted">
+          {props.user.email}
+        </span>
       </span>
     </span>
   );
@@ -35,7 +48,9 @@ export function IdentityCell(props: { user: DirectoryUser }) {
 
 export function RoleBadge(props: { role: UserRole }) {
   return (
-    <span class={`rounded px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] ${ROLE_TONE[props.role]}`}>
+    <span
+      class={`rounded px-1.5 py-0.5 text-[11px] font-medium uppercase tracking-[0.08em] ${ROLE_TONE[props.role]}`}
+    >
       {props.role}
     </span>
   );
@@ -49,10 +64,14 @@ export function AppAccessIcons(props: { apps: AppAccess[] }) {
           const AppIcon = APP_ICONS[app];
           const granted = () => props.apps.includes(app);
           return (
-            <AppTooltip content={`${app}: ${granted() ? "access granted" : "no access"}`}>
+            <AppTooltip
+              content={`${app}: ${granted() ? "access granted" : "no access"}`}
+            >
               <span
                 class={`flex h-6 w-6 items-center justify-center rounded ${
-                  granted() ? "bg-primary/10 text-primary dark:text-red-400" : "text-foreground-muted/40"
+                  granted()
+                    ? "bg-primary/10 text-primary dark:text-red-400"
+                    : "text-foreground-muted/40"
                 }`}
               >
                 <AppIcon size={14} stroke-width={1.75} />

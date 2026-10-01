@@ -20,7 +20,10 @@ export function ImpersonationBanner(props: { email: string }) {
   onCleanup(() => window.removeEventListener("keydown", onKeyDown));
 
   return (
-    <div role="alert" class="z-50 flex h-8 items-center justify-between bg-amber-500 px-4 text-xs font-medium text-black">
+    <div
+      role="alert"
+      class="z-50 flex h-8 items-center justify-between bg-amber-500 px-4 text-xs font-medium text-black"
+    >
       <span class="flex items-center gap-2">
         <UserCheck size={14} stroke-width={2} />
         Active Impersonation: <strong>{props.email}</strong>

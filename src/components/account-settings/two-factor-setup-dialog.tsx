@@ -2,8 +2,11 @@ import { PinInput } from "@ark-ui/solid/pin-input";
 import { QrCode } from "@ark-ui/solid/qr-code";
 import LoaderCircle from "lucide-solid/icons/loader-circle";
 import { createSignal, Index, Match, Show, Switch } from "solid-js";
+import {
+  messageOf,
+  unwrapClientResult,
+} from "@/components/account-settings/action-error";
 import { BackupCodeList } from "@/components/account-settings/backup-code-list";
-import { messageOf, unwrapClientResult } from "@/components/account-settings/action-error";
 import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
 import { Modal } from "@/components/ui/modal";
 import { BUTTON_OUTLINE, BUTTON_PRIMARY } from "@/components/ui/page-header";
@@ -36,11 +39,17 @@ function secretFromUri(uri: string): string {
   return new URL(uri).searchParams.get("secret") ?? "";
 }
 
-async function beginEnrollment(mode: SetupMode, password: string): Promise<Enrollment> {
+async function beginEnrollment(
+  mode: SetupMode,
+  password: string,
+): Promise<Enrollment> {
   // Disabling first discards the old secret and backup codes, so the previous
   // authenticator cannot keep working after a reset.
   if (mode === "reset") {
-    unwrapClientResult(await authClient.twoFactor.disable({ password }), "Unable to reset two-factor authentication.");
+    unwrapClientResult(
+      await authClient.twoFactor.disable({ password }),
+      "Unable to reset two-factor authentication.",
+    );
   }
   const result = unwrapClientResult(
     await authClient.twoFactor.enable({ password }),
@@ -52,7 +61,11 @@ async function beginEnrollment(mode: SetupMode, password: string): Promise<Enrol
   return { totpURI: result.totpURI, backupCodes: result.backupCodes };
 }
 
-function PasswordStep(props: { mode: SetupMode; onEnrolled: (enrollment: Enrollment) => void; onClose: () => void }) {
+function PasswordStep(props: {
+  mode: SetupMode;
+  onEnrolled: (enrollment: Enrollment) => void;
+  onClose: () => void;
+}) {
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal<string | null>(null);
   const [pending, setPending] = createSignal(false);
@@ -74,17 +87,29 @@ function PasswordStep(props: { mode: SetupMode; onEnrolled: (enrollment: Enrollm
     <form onSubmit={submit} class="space-y-4" novalidate>
       <Show when={props.mode === "reset"}>
         <p class="rounded-md border border-border bg-surface px-3 py-2.5 text-[13px] text-foreground-muted">
-          Your current authenticator and backup codes stop working immediately. If you leave before finishing, two-factor
-          stays off until you set it up again.
+          Your current authenticator and backup codes stop working immediately.
+          If you leave before finishing, two-factor stays off until you set it
+          up again.
         </p>
       </Show>
       <AuthErrorAlert message={error()} />
-      <PasswordField id="setup-password" label="Current Password" autocomplete="current-password" autofocus value={password()} onInput={setPassword} />
+      <PasswordField
+        id="setup-password"
+        label="Current Password"
+        autocomplete="current-password"
+        autofocus
+        value={password()}
+        onInput={setPassword}
+      />
       <div class="flex justify-end gap-2">
         <button type="button" onClick={props.onClose} class={BUTTON_OUTLINE}>
           Cancel
         </button>
-        <button type="submit" disabled={pending() || !password()} class={`${BUTTON_PRIMARY} disabled:cursor-not-allowed disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={pending() || !password()}
+          class={`${BUTTON_PRIMARY} disabled:cursor-not-allowed disabled:opacity-60`}
+        >
           <Show when={pending()}>
             <LoaderCircle size={16} stroke-width={1.75} class="animate-spin" />
           </Show>
@@ -105,7 +130,10 @@ function VerifyStep(props: { totpURI: string; onVerified: () => void }) {
     setError(null);
     setPending(true);
     try {
-      unwrapClientResult(await authClient.twoFactor.verifyTotp({ code }), "That code is not valid. Try again.");
+      unwrapClientResult(
+        await authClient.twoFactor.verifyTotp({ code }),
+        "That code is not valid. Try again.",
+      );
       props.onVerified();
     } catch (failure) {
       setError(messageOf(failure, "That code is not valid. Try again."));
@@ -117,7 +145,8 @@ function VerifyStep(props: { totpURI: string; onVerified: () => void }) {
   return (
     <div class="space-y-4">
       <p class="text-[13px] text-foreground-muted">
-        Scan this QR code with your authenticator app, then enter the 6-digit code it shows.
+        Scan this QR code with your authenticator app, then enter the 6-digit
+        code it shows.
       </p>
       <div class="flex justify-center">
         <div class="flex items-center justify-center rounded-md bg-white p-2">
@@ -129,8 +158,12 @@ function VerifyStep(props: { totpURI: string; onVerified: () => void }) {
         </div>
       </div>
       <div>
-        <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">Setup Key</p>
-        <p class="mt-1 break-all rounded bg-surface px-2 py-1.5 font-mono text-xs select-all">{secretFromUri(props.totpURI)}</p>
+        <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">
+          Setup Key
+        </p>
+        <p class="mt-1 break-all rounded bg-surface px-2 py-1.5 font-mono text-xs select-all">
+          {secretFromUri(props.totpURI)}
+        </p>
       </div>
       <AuthErrorAlert message={error()} />
       <PinInput.Root
@@ -148,7 +181,9 @@ function VerifyStep(props: { totpURI: string; onVerified: () => void }) {
           Authentication Code
         </PinInput.Label>
         <PinInput.Control class="mt-1.5 grid grid-cols-6 gap-2">
-          <Index each={PIN_CELLS}>{(cell) => <PinInput.Input index={cell()} class={PIN_CELL_CLASS} />}</Index>
+          <Index each={PIN_CELLS}>
+            {(cell) => <PinInput.Input index={cell()} class={PIN_CELL_CLASS} />}
+          </Index>
         </PinInput.Control>
         <PinInput.HiddenInput />
       </PinInput.Root>
@@ -160,11 +195,16 @@ function CodesStep(props: { codes: string[]; onDone: () => void }) {
   return (
     <div class="space-y-4">
       <p class="text-[13px] text-foreground-muted">
-        Two-factor authentication is on. Store these single-use backup codes somewhere safe. Each one signs you in once if
-        you lose your authenticator.
+        Two-factor authentication is on. Store these single-use backup codes
+        somewhere safe. Each one signs you in once if you lose your
+        authenticator.
       </p>
       <BackupCodeList codes={props.codes} />
-      <button type="button" onClick={props.onDone} class={`${BUTTON_PRIMARY} w-full`}>
+      <button
+        type="button"
+        onClick={props.onDone}
+        class={`${BUTTON_PRIMARY} w-full`}
+      >
         I&apos;ve saved my codes
       </button>
     </div>
@@ -188,10 +228,17 @@ function SetupFlow(props: SetupFlowProps) {
         />
       </Match>
       <Match when={step() === "verify" && enrollment()}>
-        {(current) => <VerifyStep totpURI={current().totpURI} onVerified={() => setStep("codes")} />}
+        {(current) => (
+          <VerifyStep
+            totpURI={current().totpURI}
+            onVerified={() => setStep("codes")}
+          />
+        )}
       </Match>
       <Match when={step() === "codes" && enrollment()}>
-        {(current) => <CodesStep codes={current().backupCodes} onDone={props.onFinished} />}
+        {(current) => (
+          <CodesStep codes={current().backupCodes} onDone={props.onFinished} />
+        )}
       </Match>
     </Switch>
   );
@@ -208,10 +255,16 @@ export function TwoFactorSetupDialog(props: TwoFactorSetupDialogProps) {
   return (
     <Modal
       open={props.open}
-      title={props.mode === "reset" ? "Reset Authenticator" : "Set Up Two-Factor"}
+      title={
+        props.mode === "reset" ? "Reset Authenticator" : "Set Up Two-Factor"
+      }
       onOpenChange={props.onOpenChange}
     >
-      <SetupFlow mode={props.mode} onClose={() => props.onOpenChange(false)} onFinished={props.onFinished} />
+      <SetupFlow
+        mode={props.mode}
+        onClose={() => props.onOpenChange(false)}
+        onFinished={props.onFinished}
+      />
     </Modal>
   );
 }

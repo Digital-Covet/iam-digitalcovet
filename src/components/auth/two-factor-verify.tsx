@@ -13,7 +13,8 @@ const CODE_LENGTH = 6;
 const PIN_CELLS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
 const GENERIC_FAILURE = "Unable to verify the code. Try again.";
 
-const LABEL_CLASS = "text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
+const LABEL_CLASS =
+  "text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
 const LINK_BUTTON_CLASS =
   "text-xs text-[#f87171] underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring";
 const PIN_CELL_CLASS =
@@ -25,7 +26,11 @@ const PIN_CELL_CLASS =
 type VerifyMode = "totp" | "backup";
 
 function isOAuthFlow(params: URLSearchParams): boolean {
-  return params.has("client_id") && params.has("response_type") && params.has("code_challenge");
+  return (
+    params.has("client_id") &&
+    params.has("response_type") &&
+    params.has("code_challenge")
+  );
 }
 
 export function TwoFactorVerify(props: { redirectTo: string | null }) {
@@ -39,7 +44,9 @@ export function TwoFactorVerify(props: { redirectTo: string | null }) {
   const totpCode = () => pin().join("");
   const canSubmit = () =>
     !pending() &&
-    (mode() === "totp" ? totpCode().length === CODE_LENGTH : backupCode().trim().length > 0);
+    (mode() === "totp"
+      ? totpCode().length === CODE_LENGTH
+      : backupCode().trim().length > 0);
 
   function switchMode(next: VerifyMode) {
     setError(null);
@@ -94,7 +101,9 @@ export function TwoFactorVerify(props: { redirectTo: string | null }) {
   return (
     <form onSubmit={handleSubmit} class="space-y-5" novalidate>
       <div class="space-y-1">
-        <h2 class="font-heading text-lg font-bold tracking-[-0.01em]">Two-Factor Authentication</h2>
+        <h2 class="font-heading text-lg font-bold tracking-[-0.01em]">
+          Two-Factor Authentication
+        </h2>
         <p class="text-[13px] text-foreground-muted">
           <Show
             when={mode() === "totp"}
@@ -120,10 +129,17 @@ export function TwoFactorVerify(props: { redirectTo: string | null }) {
             onValueChange={(details) => setPin(details.value)}
             onValueComplete={(details) => void verify(details.valueAsString)}
           >
-            <PinInput.Label class={LABEL_CLASS}>Authentication Code</PinInput.Label>
-            <PinInput.Control ref={pinContainer} class="mt-1.5 grid grid-cols-6 gap-2">
+            <PinInput.Label class={LABEL_CLASS}>
+              Authentication Code
+            </PinInput.Label>
+            <PinInput.Control
+              ref={pinContainer}
+              class="mt-1.5 grid grid-cols-6 gap-2"
+            >
               <Index each={PIN_CELLS}>
-                {(cell) => <PinInput.Input index={cell()} class={PIN_CELL_CLASS} />}
+                {(cell) => (
+                  <PinInput.Input index={cell()} class={PIN_CELL_CLASS} />
+                )}
               </Index>
             </PinInput.Control>
             <PinInput.HiddenInput />
@@ -162,18 +178,29 @@ export function TwoFactorVerify(props: { redirectTo: string | null }) {
         <Show
           when={mode() === "totp"}
           fallback={
-            <button type="button" onClick={() => switchMode("totp")} class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}>
+            <button
+              type="button"
+              onClick={() => switchMode("totp")}
+              class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}
+            >
               <Smartphone size={14} stroke-width={1.75} />
               Use your authenticator app instead
             </button>
           }
         >
-          <button type="button" onClick={() => switchMode("backup")} class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}>
+          <button
+            type="button"
+            onClick={() => switchMode("backup")}
+            class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}
+          >
             <KeyRound size={14} stroke-width={1.75} />
             Lost access to authenticator? Use a backup code
           </button>
         </Show>
-        <a href={ROUTES.LOGIN} class="text-xs text-foreground-muted underline-offset-2 hover:underline">
+        <a
+          href={ROUTES.LOGIN}
+          class="text-xs text-foreground-muted underline-offset-2 hover:underline"
+        >
           Back to sign in
         </a>
       </div>

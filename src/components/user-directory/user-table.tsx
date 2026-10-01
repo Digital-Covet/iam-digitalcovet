@@ -1,13 +1,19 @@
 import { For, Show } from "solid-js";
 import { Card } from "@/components/ui/card";
 import type { RowAction } from "@/components/user-directory/user-actions";
-import { AppAccessIcons, IdentityCell, RoleBadge, UserStatusPill } from "@/components/user-directory/user-cells";
+import {
+  AppAccessIcons,
+  IdentityCell,
+  RoleBadge,
+  UserStatusPill,
+} from "@/components/user-directory/user-cells";
 import { UserRowMenu } from "@/components/user-directory/user-row-menu";
 import { formatDate } from "@/lib/format-date";
 import type { DirectoryActor } from "@/lib/user-directory";
 import type { DirectoryUser } from "@/types";
 
-const HEAD_CELL = "px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
+const HEAD_CELL =
+  "px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
 const WIDE_ONLY = "hidden md:table-cell";
 
 interface UserTableProps {
@@ -18,12 +24,23 @@ interface UserTableProps {
   onClearFilters: () => void;
 }
 
-function EmptyState(props: { hasActiveFilters: boolean; onClearFilters: () => void }) {
+function EmptyState(props: {
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
+}) {
   return (
     <div class="px-4 py-12 text-center text-sm text-foreground-muted">
-      <p>{props.hasActiveFilters ? "No identities match filter criteria." : "No users have been added yet."}</p>
+      <p>
+        {props.hasActiveFilters
+          ? "No identities match filter criteria."
+          : "No users have been added yet."}
+      </p>
       <Show when={props.hasActiveFilters}>
-        <button type="button" onClick={props.onClearFilters} class="mt-2 font-medium text-primary underline-offset-2 hover:underline dark:text-red-400">
+        <button
+          type="button"
+          onClick={props.onClearFilters}
+          class="mt-2 font-medium text-primary underline-offset-2 hover:underline dark:text-red-400"
+        >
           Clear all filters
         </button>
       </Show>
@@ -31,7 +48,11 @@ function EmptyState(props: { hasActiveFilters: boolean; onClearFilters: () => vo
   );
 }
 
-function UserRow(props: { user: DirectoryUser; actor: DirectoryActor; onAction: UserTableProps["onAction"] }) {
+function UserRow(props: {
+  user: DirectoryUser;
+  actor: DirectoryActor;
+  onAction: UserTableProps["onAction"];
+}) {
   return (
     <tr class="h-11 border-t border-border-subtle transition-colors hover:bg-primary/5">
       <td class="max-w-[280px] px-4">
@@ -52,11 +73,17 @@ function UserRow(props: { user: DirectoryUser; actor: DirectoryActor; onAction: 
       <td class="px-4">
         <UserStatusPill user={props.user} />
       </td>
-      <td class={`whitespace-nowrap px-4 font-mono text-xs tabular-nums text-foreground-muted ${WIDE_ONLY}`}>
+      <td
+        class={`whitespace-nowrap px-4 font-mono text-xs tabular-nums text-foreground-muted ${WIDE_ONLY}`}
+      >
         {formatDate(props.user.createdAt)}
       </td>
       <td class="px-4 text-right">
-        <UserRowMenu user={props.user} actor={props.actor} onAction={props.onAction} />
+        <UserRowMenu
+          user={props.user}
+          actor={props.actor}
+          onAction={props.onAction}
+        />
       </td>
     </tr>
   );
@@ -67,7 +94,12 @@ export function UserTable(props: UserTableProps) {
     <Card>
       <Show
         when={props.users.length > 0}
-        fallback={<EmptyState hasActiveFilters={props.hasActiveFilters} onClearFilters={props.onClearFilters} />}
+        fallback={
+          <EmptyState
+            hasActiveFilters={props.hasActiveFilters}
+            onClearFilters={props.onClearFilters}
+          />
+        }
       >
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
@@ -84,7 +116,15 @@ export function UserTable(props: UserTableProps) {
               </tr>
             </thead>
             <tbody>
-              <For each={props.users}>{(user) => <UserRow user={user} actor={props.actor} onAction={props.onAction} />}</For>
+              <For each={props.users}>
+                {(user) => (
+                  <UserRow
+                    user={user}
+                    actor={props.actor}
+                    onAction={props.onAction}
+                  />
+                )}
+              </For>
             </tbody>
           </table>
         </div>

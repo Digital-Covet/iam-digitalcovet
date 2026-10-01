@@ -8,11 +8,7 @@
     },
     "ark-ui": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@ark-ui/mcp"
-      ]
+      "command": ["npx", "-y", "@ark-ui/mcp"]
     }
   }
 }

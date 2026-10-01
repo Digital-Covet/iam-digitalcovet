@@ -17,7 +17,10 @@ export default function AuthSettingsPage() {
   return (
     <>
       <Title>{pageMetadata.authSettings.title}</Title>
-      <Meta name="description" content={pageMetadata.authSettings.description} />
+      <Meta
+        name="description"
+        content={pageMetadata.authSettings.description}
+      />
       <AppShell>
         <Suspense
           fallback={

@@ -1,5 +1,10 @@
 import { ALL_APPS, CLIENT_ID_BY_APP } from "@/lib/app-access";
-import type { AppAccess, AppHealth, ConnectedApp, LogoutEndpoint } from "@/types";
+import type {
+  AppAccess,
+  AppHealth,
+  ConnectedApp,
+  LogoutEndpoint,
+} from "@/types";
 
 export const FRONT_CHANNEL_LOGOUT_PATH = "/api/auth/front-channel-logout";
 
@@ -46,9 +51,12 @@ function toHttpUrl(value: string | undefined): URL | null {
 }
 
 /** Only http(s) targets are launchable, so a bad client record can never inject a `javascript:` link. */
-export function resolveLaunchUrl(client: ClientConfig | undefined): string | null {
+export function resolveLaunchUrl(
+  client: ClientConfig | undefined,
+): string | null {
   if (!client) return null;
-  const url = toHttpUrl(client.uri ?? undefined) ?? toHttpUrl(client.redirectUris[0]);
+  const url =
+    toHttpUrl(client.uri ?? undefined) ?? toHttpUrl(client.redirectUris[0]);
   return url ? url.origin : null;
 }
 
@@ -67,7 +75,8 @@ export function buildConnectedApp(input: ConnectedAppInput): ConnectedApp {
     description: APP_DESCRIPTIONS[input.app],
     status: input.health.status,
     launchUrl,
-    hasAccess: input.hasAccess && input.health.status === "active" && launchUrl !== null,
+    hasAccess:
+      input.hasAccess && input.health.status === "active" && launchUrl !== null,
     admin: input.isAdmin
       ? {
           clientId: input.client?.clientId ?? CLIENT_ID_BY_APP[input.app],
@@ -79,16 +88,28 @@ export function buildConnectedApp(input: ConnectedAppInput): ConnectedApp {
   };
 }
 
-export function buildLogoutEndpoints(clients: readonly ClientConfig[]): LogoutEndpoint[] {
+export function buildLogoutEndpoints(
+  clients: readonly ClientConfig[],
+): LogoutEndpoint[] {
   return ALL_APPS.flatMap((app) => {
-    const client = clients.find((candidate) => candidate.clientId === CLIENT_ID_BY_APP[app]);
+    const client = clients.find(
+      (candidate) => candidate.clientId === CLIENT_ID_BY_APP[app],
+    );
     if (!client?.enableEndSession) return [];
 
     return client.postLogoutRedirectUris
       .filter((uri) => !isLocalhost(uri))
       .flatMap((uri) => {
         const base = toHttpUrl(uri);
-        return base ? [{ app, url: `${base.origin}${FRONT_CHANNEL_LOGOUT_PATH}`, active: !client.disabled }] : [];
+        return base
+          ? [
+              {
+                app,
+                url: `${base.origin}${FRONT_CHANNEL_LOGOUT_PATH}`,
+                active: !client.disabled,
+              },
+            ]
+          : [];
       });
   });
 }

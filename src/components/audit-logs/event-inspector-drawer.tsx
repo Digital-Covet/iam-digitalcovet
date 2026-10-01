@@ -28,20 +28,29 @@ export function EventInspectorDrawer(props: EventInspectorDrawerProps) {
   return (
     <Drawer
       open={props.entry !== null}
-      title={props.entry ? `Event Telemetry: ${toShortEventId(props.entry.id)}` : "Event Telemetry"}
+      title={
+        props.entry
+          ? `Event Telemetry: ${toShortEventId(props.entry.id)}`
+          : "Event Telemetry"
+      }
       description="Full context recorded for this security event"
       onOpenChange={(open) => !open && props.onClose()}
     >
       <Show when={props.entry}>
         {(entry) => (
           <div class="space-y-5">
-            <StatusPill tone={AUDIT_OUTCOME_TONE[entry().status]} label={entry().status} />
+            <StatusPill
+              tone={AUDIT_OUTCOME_TONE[entry().status]}
+              label={entry().status}
+            />
             <dl class="grid grid-cols-[120px_1fr] gap-x-4 gap-y-2.5 text-[13px]">
               <For each={metaRows(entry())}>
                 {([label, value]) => (
                   <>
                     <dt class="text-foreground-muted">{label}</dt>
-                    <dd class="min-w-0 break-words font-mono text-xs text-foreground">{value}</dd>
+                    <dd class="min-w-0 break-words font-mono text-xs text-foreground">
+                      {value}
+                    </dd>
                   </>
                 )}
               </For>

@@ -1,5 +1,9 @@
+import type {
+  AuditLogEvent,
+  AuditLogStatus,
+  AuditLogTargetApp,
+} from "@generated/prisma/client";
 import { prisma } from "@/db";
-import type { AuditLogEvent, AuditLogTargetApp, AuditLogStatus } from "@generated/prisma/client";
 
 function getClientIp(request: Request | undefined): string | null {
   if (!request) return null;
@@ -7,12 +11,17 @@ function getClientIp(request: Request | undefined): string | null {
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  return request.headers.get("x-real-ip") ?? request.headers.get("x-client-ip") ?? null;
+  return (
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-client-ip") ??
+    null
+  );
 }
 
 function detectTargetApp(request: Request | undefined): AuditLogTargetApp {
   if (!request) return "iam_system";
-  const origin = request.headers.get("origin") ?? request.headers.get("referer") ?? "";
+  const origin =
+    request.headers.get("origin") ?? request.headers.get("referer") ?? "";
   if (origin.includes("share.digitalcovet.com")) return "share";
   if (origin.includes("portfolio.digitalcovet.com")) return "portfolio";
   if (origin.includes("desk.flonion.com")) return "desk";

@@ -1,4 +1,4 @@
-import { Select, createListCollection } from "@ark-ui/solid/select";
+import { createListCollection, Select } from "@ark-ui/solid/select";
 import Check from "lucide-solid/icons/check";
 import ChevronDown from "lucide-solid/icons/chevron-down";
 import { createMemo, For } from "solid-js";
@@ -46,7 +46,10 @@ export function FilterSelect(props: FilterSelectProps) {
           aria-label={props.label}
           class={`${FILTER_CONTROL} flex cursor-pointer items-center justify-between gap-2 text-left data-[disabled]:opacity-60`}
         >
-          <Select.ValueText placeholder={`Select ${props.label.toLowerCase()}`} class="truncate" />
+          <Select.ValueText
+            placeholder={`Select ${props.label.toLowerCase()}`}
+            class="truncate"
+          />
           <Select.Indicator class="shrink-0 text-foreground-muted">
             <ChevronDown size={14} stroke-width={1.75} />
           </Select.Indicator>
@@ -61,7 +64,9 @@ export function FilterSelect(props: FilterSelectProps) {
                   item={option}
                   class="flex h-8 cursor-pointer items-center justify-between gap-2 rounded px-2 text-[13px] text-foreground data-[highlighted]:bg-primary/10 data-[state=checked]:font-medium"
                 >
-                  <Select.ItemText class="truncate">{option.label}</Select.ItemText>
+                  <Select.ItemText class="truncate">
+                    {option.label}
+                  </Select.ItemText>
                   <Select.ItemIndicator class="shrink-0 text-primary">
                     <Check size={14} stroke-width={1.75} />
                   </Select.ItemIndicator>

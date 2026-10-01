@@ -2,15 +2,16 @@ import { Field } from "@ark-ui/solid/field";
 import { PasswordInput } from "@ark-ui/solid/password-input";
 import Eye from "lucide-solid/icons/eye";
 import EyeOff from "lucide-solid/icons/eye-off";
-import { Show } from "solid-js";
 import type { JSX } from "solid-js";
+import { Show } from "solid-js";
 
 export const FIELD_CLASS =
   "h-10 w-full rounded-md border border-border bg-surface-raised px-3 text-sm text-foreground " +
   "placeholder:text-foreground-muted transition-colors duration-[120ms] " +
   "focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-60";
 
-export const LABEL_CLASS = "text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
+export const LABEL_CLASS =
+  "text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
 
 interface PasswordFieldProps {
   id: string;
@@ -29,13 +30,23 @@ interface PasswordFieldProps {
 
 export function PasswordField(props: PasswordFieldProps) {
   return (
-    <Field.Root invalid={props.invalid ?? props.error != null} disabled={props.disabled} required={props.required}>
-      <PasswordInput.Root autoComplete={props.autocomplete} disabled={props.disabled} invalid={props.invalid ?? props.error != null}>
+    <Field.Root
+      invalid={props.invalid ?? props.error != null}
+      disabled={props.disabled}
+      required={props.required}
+    >
+      <PasswordInput.Root
+        autoComplete={props.autocomplete}
+        disabled={props.disabled}
+        invalid={props.invalid ?? props.error != null}
+      >
         <div class="flex items-center justify-between">
           <PasswordInput.Label for={props.id} class={LABEL_CLASS}>
             {props.label}
           </PasswordInput.Label>
-          <Show when={props.labelAside}>{(aside) => <span>{aside()}</span>}</Show>
+          <Show when={props.labelAside}>
+            {(aside) => <span>{aside()}</span>}
+          </Show>
         </div>
         <PasswordInput.Control class="relative mt-1.5">
           <PasswordInput.Input
@@ -61,7 +72,9 @@ export function PasswordField(props: PasswordFieldProps) {
       </PasswordInput.Root>
       <Show when={props.error}>
         {(message) => (
-          <Field.ErrorText class="mt-1 text-xs text-red-800 dark:text-red-400">{message()}</Field.ErrorText>
+          <Field.ErrorText class="mt-1 text-xs text-red-800 dark:text-red-400">
+            {message()}
+          </Field.ErrorText>
         )}
       </Show>
     </Field.Root>

@@ -13,16 +13,26 @@ function RoleSummary(props: { role: RoleDefinition }) {
   return (
     <div class="flex flex-col gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
-        <h2 class="font-heading text-lg font-bold leading-[1.3] tracking-[-0.01em] text-foreground">{props.role.name}</h2>
-        <p class="mt-1 max-w-xl text-sm leading-[1.65] text-foreground-muted">{props.role.description}</p>
+        <h2 class="font-heading text-lg font-bold leading-[1.3] tracking-[-0.01em] text-foreground">
+          {props.role.name}
+        </h2>
+        <p class="mt-1 max-w-xl text-sm leading-[1.65] text-foreground-muted">
+          {props.role.description}
+        </p>
       </div>
       <dl class="flex shrink-0 gap-6 font-mono text-xs tabular-nums">
         <div>
-          <dt class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">Members</dt>
-          <dd class="mt-0.5 text-base text-foreground">{props.role.userCount}</dd>
+          <dt class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">
+            Members
+          </dt>
+          <dd class="mt-0.5 text-base text-foreground">
+            {props.role.userCount}
+          </dd>
         </div>
         <div>
-          <dt class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">Granted</dt>
+          <dt class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">
+            Granted
+          </dt>
           <dd class="mt-0.5 text-base text-foreground">
             {counts().granted} / {counts().total}
           </dd>
@@ -41,7 +51,10 @@ export function RolesAccessView(props: { data: RolesAccessData }) {
         title="Roles & Permission Sets"
         subtitle="Define ecosystem privilege boundaries and resource access limits"
       />
-      <Tabs.Root value={selected()} onValueChange={(details) => setSelected(details.value)}>
+      <Tabs.Root
+        value={selected()}
+        onValueChange={(details) => setSelected(details.value)}
+      >
         <Tabs.List class="mb-4 flex gap-1 border-b border-border">
           <For each={props.data.roles}>
             {(role) => (
@@ -50,7 +63,9 @@ export function RolesAccessView(props: { data: RolesAccessData }) {
                 class="-mb-px inline-flex h-10 items-center gap-2 border-b-2 border-transparent px-3 text-sm font-medium text-foreground-muted transition-colors duration-[120ms] hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ring data-[selected]:border-primary data-[selected]:text-foreground"
               >
                 {role.id}
-                <span class="rounded bg-surface-raised px-1.5 font-mono text-[11px] tabular-nums">{role.userCount}</span>
+                <span class="rounded bg-surface-raised px-1.5 font-mono text-[11px] tabular-nums">
+                  {role.userCount}
+                </span>
               </Tabs.Trigger>
             )}
           </For>

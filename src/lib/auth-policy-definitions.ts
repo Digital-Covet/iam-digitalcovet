@@ -101,7 +101,8 @@ export const POLICY_DEFINITIONS: readonly PolicyDefinition[] = [
     group: "password",
     control: "number",
     label: "Prevent password reuse",
-    description: "How many previous passwords are remembered. 0 disables the check.",
+    description:
+      "How many previous passwords are remembered. 0 disables the check.",
     min: 0,
     max: 24,
     unit: "passwords",
@@ -147,7 +148,9 @@ export const POLICY_DEFINITIONS: readonly PolicyDefinition[] = [
   },
 ];
 
-const definitionsByKey = new Map<string, PolicyDefinition>(POLICY_DEFINITIONS.map((d) => [d.key, d]));
+const definitionsByKey = new Map<string, PolicyDefinition>(
+  POLICY_DEFINITIONS.map((d) => [d.key, d]),
+);
 
 export function definitionFor(key: string): PolicyDefinition | undefined {
   return definitionsByKey.get(key);
@@ -158,17 +161,29 @@ export function definitionsInGroup(group: PolicyGroup): PolicyDefinition[] {
 }
 
 export function defaultPolicyValues(): PolicyValues {
-  return Object.fromEntries(POLICY_DEFINITIONS.map((d) => [d.key, d.fallback])) as PolicyValues;
+  return Object.fromEntries(
+    POLICY_DEFINITIONS.map((d) => [d.key, d.fallback]),
+  ) as PolicyValues;
 }
 
-export function assertValidPolicyValue(definition: PolicyDefinition, value: unknown): asserts value is PolicyValue {
+export function assertValidPolicyValue(
+  definition: PolicyDefinition,
+  value: unknown,
+): asserts value is PolicyValue {
   if (definition.control === "toggle") {
-    if (typeof value !== "boolean") throw new Error(`${definition.label} must be on or off.`);
+    if (typeof value !== "boolean")
+      throw new Error(`${definition.label} must be on or off.`);
     return;
   }
-  const inRange = typeof value === "number" && Number.isInteger(value) && value >= definition.min && value <= definition.max;
+  const inRange =
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= definition.min &&
+    value <= definition.max;
   if (!inRange) {
-    throw new Error(`${definition.label} must be a whole number from ${definition.min} to ${definition.max}.`);
+    throw new Error(
+      `${definition.label} must be a whole number from ${definition.min} to ${definition.max}.`,
+    );
   }
 }
 
@@ -178,7 +193,10 @@ export interface StoredPolicy {
 }
 
 /** Numeric rules are active only while above zero; toggles keep their state in `value`. */
-export function encodePolicy(definition: PolicyDefinition, value: PolicyValue): StoredPolicy {
+export function encodePolicy(
+  definition: PolicyDefinition,
+  value: PolicyValue,
+): StoredPolicy {
   if (definition.control === "toggle") return { value, enabled: true };
   return { value, enabled: Number(value) > 0 };
 }
@@ -188,7 +206,8 @@ export function decodePolicy(
   stored: { value: unknown; enabled: boolean } | undefined,
 ): PolicyValue {
   if (!stored) return definition.fallback;
-  if (definition.control === "toggle") return stored.enabled && stored.value === true;
+  if (definition.control === "toggle")
+    return stored.enabled && stored.value === true;
   if (!stored.enabled && definition.min === 0) return 0;
   const parsed = Number(stored.value);
   return Number.isFinite(parsed) ? parsed : definition.fallback;
@@ -204,12 +223,15 @@ const PASSWORD_RULE_KEYS: ReadonlySet<PolicyKey> = new Set([
 
 /** Shapes draft values like stored rows so they can run through the same validator sign-in uses. */
 export function toPasswordPolicies(values: PolicyValues): PasswordPolicy[] {
-  return POLICY_DEFINITIONS.filter((d) => PASSWORD_RULE_KEYS.has(d.key)).map((d) => ({
-    id: d.key,
-    key: d.key,
-    label: d.label,
-    description: d.description,
-    value: values[d.key],
-    enabled: typeof values[d.key] === "boolean" ? (values[d.key] as boolean) : true,
-  }));
+  return POLICY_DEFINITIONS.filter((d) => PASSWORD_RULE_KEYS.has(d.key)).map(
+    (d) => ({
+      id: d.key,
+      key: d.key,
+      label: d.label,
+      description: d.description,
+      value: values[d.key],
+      enabled:
+        typeof values[d.key] === "boolean" ? (values[d.key] as boolean) : true,
+    }),
+  );
 }

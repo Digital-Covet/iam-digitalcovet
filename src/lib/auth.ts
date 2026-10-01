@@ -1,17 +1,22 @@
-
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { createAuthMiddleware, APIError } from "better-auth/api";
-import { admin as adminPlugin, emailOTP, jwt, organization, twoFactor } from "better-auth/plugins";
-import { oauthProvider } from "@better-auth/oauth-provider";
+import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  admin as adminPlugin,
+  emailOTP,
+  jwt,
+  organization,
+  twoFactor,
+} from "better-auth/plugins";
 import { prisma } from "@/db";
 import { sendEmail } from "@/services/email";
 import { renderDeleteVerificationEmail } from "@/services/email-templates";
 import { CLIENT_APPS, effectiveAppAccess } from "./app-access";
-import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
 import { createAuditLog } from "./audit";
 import { loadPasswordPolicies } from "./password-policy-store";
 import { validatePassword } from "./password-validation";
+import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
 
 const storeBackupCodes =
   process.env.NODE_ENV === "development" ? "plain" : "encrypted";
@@ -42,7 +47,11 @@ function parseAuthorizationCode(
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || (process.env.NODE_ENV === "production" ? "https://iam.digitalcovet.com" : "http://localhost:5173"),
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    (process.env.NODE_ENV === "production"
+      ? "https://iam.digitalcovet.com"
+      : "http://localhost:5173"),
   trustedOrigins: [
     "https://iam.digitalcovet.com",
     "https://share.digitalcovet.com",
@@ -170,7 +179,9 @@ export const auth = betterAuth({
         const newPassword: string | undefined = ctx.body?.newPassword;
         if (newPassword) {
           const policies = await loadPasswordPolicies();
-          const failed = validatePassword(newPassword, policies).checks.find((c) => !c.passed);
+          const failed = validatePassword(newPassword, policies).checks.find(
+            (c) => !c.passed,
+          );
           if (failed) {
             throw new APIError("BAD_REQUEST", {
               message: `Password does not meet policy: ${failed.label}`,
@@ -200,7 +211,14 @@ export const auth = betterAuth({
             event: isError ? "failed_login" : "session_initiated",
             status: isError ? "failed" : "success",
             request: ctx.request,
-            user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
+            user: user
+              ? {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  image: user.image,
+                }
+              : undefined,
           }),
         );
       }
@@ -213,7 +231,14 @@ export const auth = betterAuth({
             event: isError ? "failed_login" : "session_initiated",
             status: isError ? "failed" : "success",
             request: ctx.request,
-            user: user ? { id: user.id, name: user.name, email: user.email, image: user.image } : undefined,
+            user: user
+              ? {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  image: user.image,
+                }
+              : undefined,
           }),
         );
       }
@@ -222,10 +247,13 @@ export const auth = betterAuth({
         const body: Record<string, string> | undefined = ctx.body;
         const clientId = body?.client_id;
         const targetApp =
-          clientId === "share" ? "share" :
-          clientId === "portfolio" ? "portfolio" :
-          clientId === "desk" ? "desk" :
-          undefined;
+          clientId === "share"
+            ? "share"
+            : clientId === "portfolio"
+              ? "portfolio"
+              : clientId === "desk"
+                ? "desk"
+                : undefined;
 
         console.log("[Audit] /oauth2/token", {
           clientId,

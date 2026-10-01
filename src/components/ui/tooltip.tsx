@@ -10,7 +10,10 @@ interface AppTooltipProps {
 
 export function AppTooltip(props: AppTooltipProps) {
   return (
-    <Tooltip.Root positioning={{ placement: "top", gutter: 6 }} disabled={props.disabled}>
+    <Tooltip.Root
+      positioning={{ placement: "top", gutter: 6 }}
+      disabled={props.disabled}
+    >
       <Tooltip.Trigger class="inline-flex items-center justify-center focus-visible:outline-2 focus-visible:outline-ring">
         {props.children}
       </Tooltip.Trigger>

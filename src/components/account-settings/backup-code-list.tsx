@@ -6,7 +6,9 @@ import { toaster } from "@/components/auth/auth-toaster";
 import { BUTTON_OUTLINE } from "@/components/ui/page-header";
 
 function download(codes: string[]) {
-  const url = URL.createObjectURL(new Blob([`${codes.join("\n")}\n`], { type: "text/plain" }));
+  const url = URL.createObjectURL(
+    new Blob([`${codes.join("\n")}\n`], { type: "text/plain" }),
+  );
   const link = document.createElement("a");
   link.href = url;
   link.download = "digitalcovet-backup-codes.txt";
@@ -20,7 +22,8 @@ export function BackupCodeList(props: { codes: string[] }) {
       value={props.codes.join("\n")}
       timeout={2000}
       onStatusChange={(details) => {
-        if (details.copied) toaster.create({ title: "Backup codes copied", type: "success" });
+        if (details.copied)
+          toaster.create({ title: "Backup codes copied", type: "success" });
       }}
     >
       <div class="space-y-3">
@@ -32,7 +35,11 @@ export function BackupCodeList(props: { codes: string[] }) {
             <Copy size={14} stroke-width={1.75} />
             <Clipboard.Indicator copied="Copied">Copy</Clipboard.Indicator>
           </Clipboard.Trigger>
-          <button type="button" onClick={() => download(props.codes)} class={`${BUTTON_OUTLINE} flex-1`}>
+          <button
+            type="button"
+            onClick={() => download(props.codes)}
+            class={`${BUTTON_OUTLINE} flex-1`}
+          >
             <Download size={14} stroke-width={1.75} />
             Download
           </button>

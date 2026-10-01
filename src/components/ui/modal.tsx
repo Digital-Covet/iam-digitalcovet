@@ -27,9 +27,13 @@ export function Modal(props: ModalProps) {
           <Dialog.Content class="w-full max-w-[440px] rounded-lg border border-border bg-surface-raised p-6 shadow-xl">
             <div class="mb-4 flex items-start justify-between gap-3">
               <div>
-                <Dialog.Title class="font-heading text-lg font-bold tracking-[-0.01em]">{props.title}</Dialog.Title>
+                <Dialog.Title class="font-heading text-lg font-bold tracking-[-0.01em]">
+                  {props.title}
+                </Dialog.Title>
                 {props.description && (
-                  <Dialog.Description class="mt-1 text-[13px] text-foreground-muted">{props.description}</Dialog.Description>
+                  <Dialog.Description class="mt-1 text-[13px] text-foreground-muted">
+                    {props.description}
+                  </Dialog.Description>
                 )}
               </div>
               <Dialog.CloseTrigger

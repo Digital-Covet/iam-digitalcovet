@@ -3,7 +3,8 @@ import Check from "lucide-solid/icons/check";
 import Copy from "lucide-solid/icons/copy";
 import { For } from "solid-js";
 
-const TOKEN_PATTERN = /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g;
+const TOKEN_PATTERN =
+  /("(?:\\.|[^"\\])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g;
 
 interface JsonToken {
   text: string;
@@ -20,17 +21,22 @@ function tokenize(json: string): JsonToken[] {
 
   for (const match of json.matchAll(TOKEN_PATTERN)) {
     const [text, quoted, colon] = match;
-    if (match.index > cursor) tokens.push({ text: json.slice(cursor, match.index), class: "" });
+    if (match.index > cursor)
+      tokens.push({ text: json.slice(cursor, match.index), class: "" });
 
     if (quoted && colon) {
-      tokens.push({ text: quoted, class: KEY_CLASS }, { text: colon, class: "" });
+      tokens.push(
+        { text: quoted, class: KEY_CLASS },
+        { text: colon, class: "" },
+      );
     } else {
       tokens.push({ text, class: quoted ? STRING_CLASS : LITERAL_CLASS });
     }
     cursor = match.index + text.length;
   }
 
-  if (cursor < json.length) tokens.push({ text: json.slice(cursor), class: "" });
+  if (cursor < json.length)
+    tokens.push({ text: json.slice(cursor), class: "" });
   return tokens;
 }
 
@@ -43,7 +49,9 @@ export function JsonCodeBlock(props: { json: string }) {
             Payload
           </Clipboard.Label>
           <Clipboard.Trigger class="inline-flex h-7 items-center gap-1.5 rounded px-2 text-xs font-medium text-foreground-muted transition-colors duration-[120ms] hover:bg-surface-raised hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
-            <Clipboard.Indicator copied={<Check size={12} stroke-width={1.75} />}>
+            <Clipboard.Indicator
+              copied={<Check size={12} stroke-width={1.75} />}
+            >
               <Copy size={12} stroke-width={1.75} />
             </Clipboard.Indicator>
             <Clipboard.Indicator copied="Copied">
@@ -53,7 +61,9 @@ export function JsonCodeBlock(props: { json: string }) {
         </div>
         <pre class="overflow-x-auto p-3 font-mono text-xs leading-[1.5] text-foreground">
           <code>
-            <For each={tokenize(props.json)}>{(token) => <span class={token.class}>{token.text}</span>}</For>
+            <For each={tokenize(props.json)}>
+              {(token) => <span class={token.class}>{token.text}</span>}
+            </For>
           </code>
         </pre>
       </div>

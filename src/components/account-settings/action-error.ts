@@ -7,8 +7,12 @@ interface ClientFailure {
 }
 
 /** Throws the better-auth failure as an Error so callers can share one catch path. */
-export function unwrapClientResult<T>(result: { data: T | null; error: ClientFailure | null }, fallback: string): T {
-  if (result.error || result.data === null) throw new Error(result.error?.message || fallback);
+export function unwrapClientResult<T>(
+  result: { data: T | null; error: ClientFailure | null },
+  fallback: string,
+): T {
+  if (result.error || result.data === null)
+    throw new Error(result.error?.message || fallback);
   return result.data;
 }
 

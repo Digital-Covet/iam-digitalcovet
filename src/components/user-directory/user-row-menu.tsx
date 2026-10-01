@@ -2,7 +2,11 @@ import { Menu } from "@ark-ui/solid/menu";
 import Ellipsis from "lucide-solid/icons/ellipsis";
 import { For } from "solid-js";
 import { Portal } from "solid-js/web";
-import { availableActions, ROW_ACTIONS, type RowAction } from "@/components/user-directory/user-actions";
+import {
+  availableActions,
+  ROW_ACTIONS,
+  type RowAction,
+} from "@/components/user-directory/user-actions";
 import type { DirectoryActor } from "@/lib/user-directory";
 import type { DirectoryUser } from "@/types";
 
@@ -16,7 +20,12 @@ export function UserRowMenu(props: UserRowMenuProps) {
   const actions = () => availableActions(props.user, props.actor);
 
   return (
-    <Menu.Root onSelect={(details) => props.onAction(details.value as RowAction, props.user)} positioning={{ placement: "bottom-end" }}>
+    <Menu.Root
+      onSelect={(details) =>
+        props.onAction(details.value as RowAction, props.user)
+      }
+      positioning={{ placement: "bottom-end" }}
+    >
       <Menu.Trigger
         aria-label={`Actions for ${props.user.name}`}
         disabled={actions().length === 0}
@@ -34,7 +43,9 @@ export function UserRowMenu(props: UserRowMenuProps) {
                   <Menu.Item
                     value={action}
                     class={`flex h-8 cursor-pointer items-center gap-2 rounded px-2 text-[13px] data-[highlighted]:bg-primary/10 ${
-                      definition.danger ? "text-red-800 dark:text-red-400" : "text-foreground"
+                      definition.danger
+                        ? "text-red-800 dark:text-red-400"
+                        : "text-foreground"
                     }`}
                   >
                     <definition.icon size={14} stroke-width={1.75} />

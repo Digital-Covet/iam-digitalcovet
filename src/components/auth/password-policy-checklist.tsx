@@ -8,7 +8,9 @@ import { validatePassword } from "@/lib/password-validation";
 
 export function PasswordPolicyChecklist(props: { password: string }) {
   const policies = createAsync(() => getPasswordPolicies());
-  const checks = createMemo(() => validatePassword(props.password, policies() ?? []).checks);
+  const checks = createMemo(
+    () => validatePassword(props.password, policies() ?? []).checks,
+  );
 
   return (
     <ul class="flex flex-wrap gap-2" aria-live="polite">
@@ -19,7 +21,10 @@ export function PasswordPolicyChecklist(props: { password: string }) {
               check.passed ? TONE_TEXT.success : TONE_TEXT.neutral
             }`}
           >
-            <Show when={check.passed} fallback={<X size={12} stroke-width={1.75} />}>
+            <Show
+              when={check.passed}
+              fallback={<X size={12} stroke-width={1.75} />}
+            >
               <Check size={12} stroke-width={1.75} />
             </Show>
             {check.label}

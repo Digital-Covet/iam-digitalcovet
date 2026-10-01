@@ -4,8 +4,8 @@ import { Show, Suspense } from "solid-js";
 import { AppShell } from "@/components/layout/app-shell";
 import { RolesAccessView } from "@/components/roles-access/roles-access-view";
 import { PageHeader } from "@/components/ui/page-header";
-import { pageMetadata } from "@/lib/seo";
 import { getRolesAccess } from "@/lib/roles-access";
+import { pageMetadata } from "@/lib/seo";
 
 export const route = {
   preload: () => getRolesAccess(),

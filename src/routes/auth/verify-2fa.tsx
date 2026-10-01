@@ -6,7 +6,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export default function Verify2faPage() {
   const [params] = useSearchParams();
-  const redirectTo = () => (typeof params.redirect === "string" ? params.redirect : null);
+  const redirectTo = () =>
+    typeof params.redirect === "string" ? params.redirect : null;
 
   return (
     <>

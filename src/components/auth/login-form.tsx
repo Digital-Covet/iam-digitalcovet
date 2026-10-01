@@ -8,7 +8,8 @@ import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 import { resolveSafeRedirect } from "@/lib/safe-redirect";
 
-const GENERIC_FAILURE = "Unable to sign in. Check your credentials and try again.";
+const GENERIC_FAILURE =
+  "Unable to sign in. Check your credentials and try again.";
 
 export function LoginForm(props: { redirectTo: string | null }) {
   const [email, setEmail] = createSignal("");
@@ -33,7 +34,8 @@ export function LoginForm(props: { redirectTo: string | null }) {
         return;
       }
       const handledByPlugin =
-        data && ("twoFactorRedirect" in data || ("redirect" in data && data.redirect));
+        data &&
+        ("twoFactorRedirect" in data || ("redirect" in data && data.redirect));
       if (!handledByPlugin) {
         window.location.assign(resolveSafeRedirect(props.redirectTo));
       }

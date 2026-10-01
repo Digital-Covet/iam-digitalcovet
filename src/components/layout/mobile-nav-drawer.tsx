@@ -12,7 +12,12 @@ interface MobileNavDrawerProps {
 
 export function MobileNavDrawer(props: MobileNavDrawerProps) {
   return (
-    <Dialog.Root open={props.open} onOpenChange={(event) => props.onOpenChange(event.open)} lazyMount unmountOnExit>
+    <Dialog.Root
+      open={props.open}
+      onOpenChange={(event) => props.onOpenChange(event.open)}
+      lazyMount
+      unmountOnExit
+    >
       <Portal>
         <Dialog.Backdrop class="fixed inset-0 z-40 bg-black/50" />
         <Dialog.Positioner class="fixed inset-y-0 left-0 z-50 flex">

@@ -32,7 +32,9 @@ function extractKey(raw: string): string {
   return decoded;
 }
 
-export function resolveAvatarUrl(raw: string | null | undefined): string | undefined {
+export function resolveAvatarUrl(
+  raw: string | null | undefined,
+): string | undefined {
   if (!raw) return undefined;
   const key = extractKey(raw);
   return `${PORTFOLIO_BASE}${PUBLIC_FILE_PATH}?key=${key}`;

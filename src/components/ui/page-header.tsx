@@ -10,10 +10,14 @@ export function PageHeader(props: PageHeaderProps) {
   return (
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 class="font-heading text-2xl font-bold leading-[1.25] tracking-[-0.02em]">{props.title}</h1>
+        <h1 class="font-heading text-2xl font-bold leading-[1.25] tracking-[-0.02em]">
+          {props.title}
+        </h1>
         <p class="mt-1 text-sm text-foreground-muted">{props.subtitle}</p>
       </div>
-      {props.actions && <div class="flex items-center gap-2">{props.actions}</div>}
+      {props.actions && (
+        <div class="flex items-center gap-2">{props.actions}</div>
+      )}
     </div>
   );
 }

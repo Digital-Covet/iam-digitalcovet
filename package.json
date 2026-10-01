@@ -14,7 +14,10 @@
     "prisma:format": "prisma format",
     "prisma:validate": "prisma validate",
     "prisma:version": "prisma --version",
-    "db:seed": "tsx prisma/update-share-secret.ts"
+    "db:seed": "tsx prisma/update-share-secret.ts",
+    "check": "biome check --write",
+    "lint": "biome lint --write",
+    "format": "biome format --write"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

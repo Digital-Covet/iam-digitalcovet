@@ -6,7 +6,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export default function LoginPage() {
   const [params] = useSearchParams();
-  const redirectTo = () => (typeof params.redirect === "string" ? params.redirect : null);
+  const redirectTo = () =>
+    typeof params.redirect === "string" ? params.redirect : null;
 
   return (
     <>

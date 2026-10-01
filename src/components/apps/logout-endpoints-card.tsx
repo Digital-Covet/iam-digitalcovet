@@ -3,7 +3,8 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import type { LogoutEndpoint } from "@/types";
 
-const HEAD_CELL = "px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
+const HEAD_CELL =
+  "px-4 py-2 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
 
 export function LogoutEndpointsCard(props: { endpoints: LogoutEndpoint[] }) {
   return (
@@ -14,7 +15,11 @@ export function LogoutEndpointsCard(props: { endpoints: LogoutEndpoint[] }) {
       </p>
       <Show
         when={props.endpoints.length > 0}
-        fallback={<p class="px-4 py-8 text-center text-sm text-foreground-muted">No logout endpoints are configured.</p>}
+        fallback={
+          <p class="px-4 py-8 text-center text-sm text-foreground-muted">
+            No logout endpoints are configured.
+          </p>
+        }
       >
         <div class="overflow-x-auto">
           <table class="w-full border-collapse">
@@ -30,7 +35,10 @@ export function LogoutEndpointsCard(props: { endpoints: LogoutEndpoint[] }) {
                 {(endpoint) => (
                   <tr class="h-9 border-t border-border-subtle transition-colors hover:bg-primary/5">
                     <td class="px-4 text-[13.5px]">{endpoint.app}</td>
-                    <td class="max-w-[360px] truncate px-4 font-mono text-xs" title={endpoint.url}>
+                    <td
+                      class="max-w-[360px] truncate px-4 font-mono text-xs"
+                      title={endpoint.url}
+                    >
                       {endpoint.url}
                     </td>
                     <td class="px-4">

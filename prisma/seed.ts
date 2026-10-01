@@ -1,10 +1,15 @@
 import "dotenv/config";
-import { randomUUID, createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
+}
+
 const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
 });
 
 const prisma = new PrismaClient({ adapter });
@@ -49,23 +54,48 @@ async function main() {
   });
 
   const superAdminPerms = [
-    { sectionId: shareSection.id, perms: [
-      { key: "share.view", label: "View Files", granted: true },
-      { key: "share.transfer", label: "Upload/Download Files", granted: true },
-      { key: "share.delete", label: "Delete Files", granted: true },
-      { key: "share.folders", label: "Manage Folder Access", granted: true },
-    ]},
-    { sectionId: portfolioSection.id, perms: [
-      { key: "portfolio.view", label: "View Portfolios", granted: true },
-      { key: "portfolio.create", label: "Create Case Studies", granted: true },
-      { key: "portfolio.publish", label: "Publish to Custom Domain", granted: true },
-      { key: "portfolio.clients", label: "Manage Client Access", granted: true },
-    ]},
-    { sectionId: systemSection.id, perms: [
-      { key: "system.users", label: "Manage Users", granted: true },
-      { key: "system.audit", label: "View Audit Logs", granted: true },
-      { key: "system.billing", label: "Manage Billing", granted: true },
-    ]},
+    {
+      sectionId: shareSection.id,
+      perms: [
+        { key: "share.view", label: "View Files", granted: true },
+        {
+          key: "share.transfer",
+          label: "Upload/Download Files",
+          granted: true,
+        },
+        { key: "share.delete", label: "Delete Files", granted: true },
+        { key: "share.folders", label: "Manage Folder Access", granted: true },
+      ],
+    },
+    {
+      sectionId: portfolioSection.id,
+      perms: [
+        { key: "portfolio.view", label: "View Portfolios", granted: true },
+        {
+          key: "portfolio.create",
+          label: "Create Case Studies",
+          granted: true,
+        },
+        {
+          key: "portfolio.publish",
+          label: "Publish to Custom Domain",
+          granted: true,
+        },
+        {
+          key: "portfolio.clients",
+          label: "Manage Client Access",
+          granted: true,
+        },
+      ],
+    },
+    {
+      sectionId: systemSection.id,
+      perms: [
+        { key: "system.users", label: "Manage Users", granted: true },
+        { key: "system.audit", label: "View Audit Logs", granted: true },
+        { key: "system.billing", label: "Manage Billing", granted: true },
+      ],
+    },
   ];
 
   for (const { sectionId, perms } of superAdminPerms) {
@@ -89,23 +119,48 @@ async function main() {
   });
 
   const adminPerms = [
-    { sectionId: shareSection.id, perms: [
-      { key: "share.view", label: "View Files", granted: true },
-      { key: "share.transfer", label: "Upload/Download Files", granted: true },
-      { key: "share.delete", label: "Delete Files", granted: true },
-      { key: "share.folders", label: "Manage Folder Access", granted: true },
-    ]},
-    { sectionId: portfolioSection.id, perms: [
-      { key: "portfolio.view", label: "View Portfolios", granted: true },
-      { key: "portfolio.create", label: "Create Case Studies", granted: true },
-      { key: "portfolio.publish", label: "Publish to Custom Domain", granted: true },
-      { key: "portfolio.clients", label: "Manage Client Access", granted: true },
-    ]},
-    { sectionId: systemSection.id, perms: [
-      { key: "system.users", label: "Manage Users", granted: true },
-      { key: "system.audit", label: "View Audit Logs", granted: false },
-      { key: "system.billing", label: "Manage Billing", granted: false },
-    ]},
+    {
+      sectionId: shareSection.id,
+      perms: [
+        { key: "share.view", label: "View Files", granted: true },
+        {
+          key: "share.transfer",
+          label: "Upload/Download Files",
+          granted: true,
+        },
+        { key: "share.delete", label: "Delete Files", granted: true },
+        { key: "share.folders", label: "Manage Folder Access", granted: true },
+      ],
+    },
+    {
+      sectionId: portfolioSection.id,
+      perms: [
+        { key: "portfolio.view", label: "View Portfolios", granted: true },
+        {
+          key: "portfolio.create",
+          label: "Create Case Studies",
+          granted: true,
+        },
+        {
+          key: "portfolio.publish",
+          label: "Publish to Custom Domain",
+          granted: true,
+        },
+        {
+          key: "portfolio.clients",
+          label: "Manage Client Access",
+          granted: true,
+        },
+      ],
+    },
+    {
+      sectionId: systemSection.id,
+      perms: [
+        { key: "system.users", label: "Manage Users", granted: true },
+        { key: "system.audit", label: "View Audit Logs", granted: false },
+        { key: "system.billing", label: "Manage Billing", granted: false },
+      ],
+    },
   ];
 
   for (const { sectionId, perms } of adminPerms) {
@@ -129,23 +184,48 @@ async function main() {
   });
 
   const employeePerms = [
-    { sectionId: shareSection.id, perms: [
-      { key: "share.view", label: "View Files", granted: true },
-      { key: "share.transfer", label: "Upload/Download Files", granted: true },
-      { key: "share.delete", label: "Delete Files", granted: false },
-      { key: "share.folders", label: "Manage Folder Access", granted: false },
-    ]},
-    { sectionId: portfolioSection.id, perms: [
-      { key: "portfolio.view", label: "View Portfolios", granted: true },
-      { key: "portfolio.create", label: "Create Case Studies", granted: true },
-      { key: "portfolio.publish", label: "Publish to Custom Domain", granted: false },
-      { key: "portfolio.clients", label: "Manage Client Access", granted: false },
-    ]},
-    { sectionId: systemSection.id, perms: [
-      { key: "system.users", label: "Manage Users", granted: false },
-      { key: "system.audit", label: "View Audit Logs", granted: false },
-      { key: "system.billing", label: "Manage Billing", granted: false },
-    ]},
+    {
+      sectionId: shareSection.id,
+      perms: [
+        { key: "share.view", label: "View Files", granted: true },
+        {
+          key: "share.transfer",
+          label: "Upload/Download Files",
+          granted: true,
+        },
+        { key: "share.delete", label: "Delete Files", granted: false },
+        { key: "share.folders", label: "Manage Folder Access", granted: false },
+      ],
+    },
+    {
+      sectionId: portfolioSection.id,
+      perms: [
+        { key: "portfolio.view", label: "View Portfolios", granted: true },
+        {
+          key: "portfolio.create",
+          label: "Create Case Studies",
+          granted: true,
+        },
+        {
+          key: "portfolio.publish",
+          label: "Publish to Custom Domain",
+          granted: false,
+        },
+        {
+          key: "portfolio.clients",
+          label: "Manage Client Access",
+          granted: false,
+        },
+      ],
+    },
+    {
+      sectionId: systemSection.id,
+      perms: [
+        { key: "system.users", label: "Manage Users", granted: false },
+        { key: "system.audit", label: "View Audit Logs", granted: false },
+        { key: "system.billing", label: "Manage Billing", granted: false },
+      ],
+    },
   ];
 
   for (const { sectionId, perms } of employeePerms) {
@@ -161,32 +241,128 @@ async function main() {
   // ── Auth Method Configs ──
   await prisma.authMethodConfig.createMany({
     data: [
-      { provider: "password", label: "Password Authentication", description: "Standard email and password login with configurable complexity requirements.", status: "enabled", enrolledUsers: 1284 },
-      { provider: "two_factor", label: "Two-Factor Authentication", description: "TOTP-based second factor via authenticator apps. Enforce across all users or specific roles.", status: "enabled", enrolledUsers: 1261 },
-      { provider: "sso_saml", label: "SAML Single Sign-On", description: "Enterprise SSO via SAML 2.0. Connect your identity provider for seamless team access.", status: "enabled", enrolledUsers: 487 },
-      { provider: "sso_oidc", label: "OpenID Connect", description: "Standards-based OIDC provider integration for modern identity federation.", status: "configuring", enrolledUsers: 0 },
-      { provider: "google", label: "Google Workspace", description: "Allow team members to sign in using their Google Workspace credentials.", status: "enabled", enrolledUsers: 312 },
-      { provider: "microsoft", label: "Microsoft Entra ID", description: "Integrate with Microsoft Entra ID (formerly Azure AD) for enterprise authentication.", status: "disabled", enrolledUsers: 0 },
+      {
+        provider: "password",
+        label: "Password Authentication",
+        description:
+          "Standard email and password login with configurable complexity requirements.",
+        status: "enabled",
+        enrolledUsers: 1284,
+      },
+      {
+        provider: "two_factor",
+        label: "Two-Factor Authentication",
+        description:
+          "TOTP-based second factor via authenticator apps. Enforce across all users or specific roles.",
+        status: "enabled",
+        enrolledUsers: 1261,
+      },
+      {
+        provider: "sso_saml",
+        label: "SAML Single Sign-On",
+        description:
+          "Enterprise SSO via SAML 2.0. Connect your identity provider for seamless team access.",
+        status: "enabled",
+        enrolledUsers: 487,
+      },
+      {
+        provider: "sso_oidc",
+        label: "OpenID Connect",
+        description:
+          "Standards-based OIDC provider integration for modern identity federation.",
+        status: "configuring",
+        enrolledUsers: 0,
+      },
+      {
+        provider: "google",
+        label: "Google Workspace",
+        description:
+          "Allow team members to sign in using their Google Workspace credentials.",
+        status: "enabled",
+        enrolledUsers: 312,
+      },
+      {
+        provider: "microsoft",
+        label: "Microsoft Entra ID",
+        description:
+          "Integrate with Microsoft Entra ID (formerly Azure AD) for enterprise authentication.",
+        status: "disabled",
+        enrolledUsers: 0,
+      },
     ],
   });
 
   // ── Password Policies ──
   await prisma.passwordPolicy.createMany({
     data: [
-      { key: "min_length", label: "Minimum Length", description: "Set the minimum number of characters required for passwords.", value: 12, enabled: true },
-      { key: "require_uppercase", label: "Require Uppercase", description: "Passwords must contain at least one uppercase letter.", value: true, enabled: true },
-      { key: "require_lowercase", label: "Require Lowercase", description: "Passwords must contain at least one lowercase letter.", value: true, enabled: true },
-      { key: "require_numbers", label: "Require Numbers", description: "Passwords must contain at least one numeric digit.", value: true, enabled: true },
-      { key: "require_special", label: "Require Special Characters", description: "Passwords must contain at least one special character (!@#$%^&*).", value: true, enabled: true },
-      { key: "expiry_days", label: "Password Expiry", description: "Force password rotation after a specified number of days.", value: 90, enabled: true },
-      { key: "prevent_reuse", label: "Prevent Reuse", description: "Prevent users from reusing their last N passwords.", value: 5, enabled: true },
-      { key: "lockout_after", label: "Lockout After Failures", description: "Lock the account after a specified number of failed login attempts.", value: 5, enabled: true },
+      {
+        key: "min_length",
+        label: "Minimum Length",
+        description:
+          "Set the minimum number of characters required for passwords.",
+        value: 12,
+        enabled: true,
+      },
+      {
+        key: "require_uppercase",
+        label: "Require Uppercase",
+        description: "Passwords must contain at least one uppercase letter.",
+        value: true,
+        enabled: true,
+      },
+      {
+        key: "require_lowercase",
+        label: "Require Lowercase",
+        description: "Passwords must contain at least one lowercase letter.",
+        value: true,
+        enabled: true,
+      },
+      {
+        key: "require_numbers",
+        label: "Require Numbers",
+        description: "Passwords must contain at least one numeric digit.",
+        value: true,
+        enabled: true,
+      },
+      {
+        key: "require_special",
+        label: "Require Special Characters",
+        description:
+          "Passwords must contain at least one special character (!@#$%^&*).",
+        value: true,
+        enabled: true,
+      },
+      {
+        key: "expiry_days",
+        label: "Password Expiry",
+        description:
+          "Force password rotation after a specified number of days.",
+        value: 90,
+        enabled: true,
+      },
+      {
+        key: "prevent_reuse",
+        label: "Prevent Reuse",
+        description: "Prevent users from reusing their last N passwords.",
+        value: 5,
+        enabled: true,
+      },
+      {
+        key: "lockout_after",
+        label: "Lockout After Failures",
+        description:
+          "Lock the account after a specified number of failed login attempts.",
+        value: 5,
+        enabled: true,
+      },
     ],
   });
 
   // ── OAuth Clients (SSO) ──
-  const portfolioRedirectUri = "https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio";
-  const portfolioDevRedirectUri = "http://localhost:3000/api/auth/oauth2/callback/portfolio";
+  const portfolioRedirectUri =
+    "https://portfolio.digitalcovet.com/api/auth/oauth2/callback/portfolio";
+  const portfolioDevRedirectUri =
+    "http://localhost:3000/api/auth/oauth2/callback/portfolio";
   const plainSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
   const hashedSecret = hashClientSecret(plainSecret);
 
@@ -221,7 +397,9 @@ async function main() {
     const updates: Record<string, unknown> = {};
     const targetUris = [portfolioRedirectUri, portfolioDevRedirectUri];
     const currentUris = existingClient.redirectUris;
-    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+    if (
+      JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())
+    ) {
       updates.redirectUris = targetUris;
     }
     // Ensure postLogoutRedirectUris are set
@@ -230,7 +408,10 @@ async function main() {
       "http://localhost:3000/auth/login",
     ];
     const currentLogoutUris = existingClient.postLogoutRedirectUris ?? [];
-    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+    if (
+      JSON.stringify(currentLogoutUris.sort()) !==
+      JSON.stringify(targetLogoutUris.sort())
+    ) {
       updates.postLogoutRedirectUris = targetLogoutUris;
     }
     // Ensure enableEndSession is true for RP-initiated logout
@@ -244,14 +425,19 @@ async function main() {
         where: { clientId: "portfolio" },
         data: updates,
       });
-      console.log("Updated OAuth client 'portfolio':", Object.keys(updates).join(", "));
+      console.log(
+        "Updated OAuth client 'portfolio':",
+        Object.keys(updates).join(", "),
+      );
     } else {
       console.log("OAuth client 'portfolio' already exists, skipping");
     }
   }
 
-  const shareRedirectUri = "https://share.digitalcovet.com/api/auth/oauth2/callback/share";
-  const shareDevRedirectUri = "http://localhost:5173/api/auth/oauth2/callback/share";
+  const shareRedirectUri =
+    "https://share.digitalcovet.com/api/auth/oauth2/callback/share";
+  const shareDevRedirectUri =
+    "http://localhost:5173/api/auth/oauth2/callback/share";
   const sharePlainSecret = process.env.OAUTH_CLIENT_SECRET_SHARE ?? "";
   const shareHashedSecret = hashClientSecret(sharePlainSecret);
 
@@ -285,7 +471,9 @@ async function main() {
     const updates: Record<string, unknown> = {};
     const targetUris = [shareRedirectUri, shareDevRedirectUri];
     const currentUris = existingShareClient.redirectUris;
-    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+    if (
+      JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())
+    ) {
       updates.redirectUris = targetUris;
     }
     // Ensure postLogoutRedirectUris are set
@@ -294,7 +482,10 @@ async function main() {
       "http://localhost:5173/auth/login",
     ];
     const currentLogoutUris = existingShareClient.postLogoutRedirectUris ?? [];
-    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+    if (
+      JSON.stringify(currentLogoutUris.sort()) !==
+      JSON.stringify(targetLogoutUris.sort())
+    ) {
       updates.postLogoutRedirectUris = targetLogoutUris;
     }
     // Ensure enableEndSession is true for RP-initiated logout
@@ -307,7 +498,10 @@ async function main() {
         where: { clientId: "share" },
         data: updates,
       });
-      console.log("Updated OAuth client 'share':", Object.keys(updates).join(", "));
+      console.log(
+        "Updated OAuth client 'share':",
+        Object.keys(updates).join(", "),
+      );
     } else {
       console.log("OAuth client 'share' already exists, skipping");
     }
@@ -349,12 +543,16 @@ async function main() {
     const updates: Record<string, unknown> = {};
     const targetUris = [deskRedirectUri, deskDevRedirectUri];
     const currentUris = existingDeskClient.redirectUris;
-    if (JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())) {
+    if (
+      JSON.stringify(currentUris.sort()) !== JSON.stringify(targetUris.sort())
+    ) {
       updates.redirectUris = targetUris;
     }
     const targetScopes = ["openid", "profile", "email", "offline_access"];
     const currentScopes = [...(existingDeskClient.scopes ?? [])].sort();
-    if (JSON.stringify(currentScopes) !== JSON.stringify([...targetScopes].sort())) {
+    if (
+      JSON.stringify(currentScopes) !== JSON.stringify([...targetScopes].sort())
+    ) {
       updates.scopes = targetScopes;
     }
     const targetLogoutUris = [
@@ -362,7 +560,10 @@ async function main() {
       "http://localhost:3000",
     ];
     const currentLogoutUris = existingDeskClient.postLogoutRedirectUris ?? [];
-    if (JSON.stringify(currentLogoutUris.sort()) !== JSON.stringify(targetLogoutUris.sort())) {
+    if (
+      JSON.stringify(currentLogoutUris.sort()) !==
+      JSON.stringify(targetLogoutUris.sort())
+    ) {
       updates.postLogoutRedirectUris = targetLogoutUris;
     }
     if (!existingDeskClient.enableEndSession) {
@@ -374,13 +575,18 @@ async function main() {
         where: { clientId: "desk" },
         data: updates,
       });
-      console.log("Updated OAuth client 'desk':", Object.keys(updates).join(", "));
+      console.log(
+        "Updated OAuth client 'desk':",
+        Object.keys(updates).join(", "),
+      );
     } else {
       console.log("OAuth client 'desk' already exists, skipping");
     }
   }
 
-  console.log("Seed complete: 3 roles, auth methods, password policies, OAuth clients");
+  console.log(
+    "Seed complete: 3 roles, auth methods, password policies, OAuth clients",
+  );
 }
 
 main()

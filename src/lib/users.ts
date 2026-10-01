@@ -2,10 +2,10 @@ import { randomBytes } from "node:crypto";
 import { query } from "@solidjs/router";
 import { getRequestEvent } from "solid-js/web";
 import { prisma } from "@/db";
-import { auth } from "@/lib/auth";
 import { ALL_APPS, ELEVATED_ROLES, effectiveAppAccess } from "@/lib/app-access";
-import { toInitials } from "@/lib/initials";
+import { auth } from "@/lib/auth";
 import { ROUTES } from "@/lib/constants";
+import { toInitials } from "@/lib/initials";
 import { isUserRole, toRoleLabel, toRoleValue } from "@/lib/roles";
 import type { DirectoryUser, UserDraft } from "@/types";
 
@@ -35,18 +35,26 @@ async function findActor(): Promise<Actor | null> {
 
 async function requireActor(): Promise<Actor> {
   const actor = await findActor();
-  if (!actor) throw new Error("You need an administrator role to manage users.");
+  if (!actor)
+    throw new Error("You need an administrator role to manage users.");
   return actor;
 }
 
 async function requireTarget(userId: string): Promise<ManagedTarget> {
-  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  });
   if (!target) throw new Error("That user no longer exists.");
   return target;
 }
 
 /** Only a superadmin may touch another superadmin or hand out the role. */
-function assertMayAssign(actor: Actor, currentRole: string | null, nextRole: string) {
+function assertMayAssign(
+  actor: Actor,
+  currentRole: string | null,
+  nextRole: string,
+) {
   if (actor.role === SUPERADMIN) return;
   if (currentRole === SUPERADMIN || nextRole === SUPERADMIN) {
     throw new Error("Only a superadmin can manage superadmin accounts.");
@@ -54,7 +62,8 @@ function assertMayAssign(actor: Actor, currentRole: string | null, nextRole: str
 }
 
 function assertNotSelf(actor: Actor, target: ManagedTarget, action: string) {
-  if (actor.id === target.id) throw new Error(`You cannot ${action} your own account.`);
+  if (actor.id === target.id)
+    throw new Error(`You cannot ${action} your own account.`);
 }
 
 interface CleanDraft {
@@ -69,9 +78,12 @@ function cleanDraft(draft: UserDraft): CleanDraft {
   const name = `${draft.firstName.trim()} ${draft.lastName.trim()}`.trim();
   const email = draft.email.trim().toLowerCase();
   if (!name || name.length > MAX_NAME_LENGTH) {
-    throw new Error(`Name must be between 1 and ${MAX_NAME_LENGTH} characters.`);
+    throw new Error(
+      `Name must be between 1 and ${MAX_NAME_LENGTH} characters.`,
+    );
   }
-  if (!EMAIL_PATTERN.test(email)) throw new Error("Enter a valid email address.");
+  if (!EMAIL_PATTERN.test(email))
+    throw new Error("Enter a valid email address.");
   if (!isUserRole(draft.role)) throw new Error("Choose a valid role.");
   return {
     name,
@@ -83,24 +95,29 @@ function cleanDraft(draft: UserDraft): CleanDraft {
 }
 
 /** Resolves to `null` when the caller is not an admin, so nothing leaks to employees. */
-export const getDirectoryUsers = query(async (): Promise<DirectoryUser[] | null> => {
-  "use server";
-  if (!(await findActor())) return null;
+export const getDirectoryUsers = query(
+  async (): Promise<DirectoryUser[] | null> => {
+    "use server";
+    if (!(await findActor())) return null;
 
-  const users = await prisma.user.findMany({ orderBy: { createdAt: "desc" } });
-  return users.map((user) => ({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    initials: user.initials ?? toInitials(user.name),
-    role: toRoleLabel(user.role),
-    mfaStatus: user.twoFactorEnabled ? "Enabled" : "Disabled",
-    appAccess: effectiveAppAccess(user),
-    avatarTone: user.avatarTone ?? "primary",
-    banned: user.banned === true,
-    createdAt: user.createdAt.toISOString(),
-  }));
-}, "directoryUsers");
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+    return users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      initials: user.initials ?? toInitials(user.name),
+      role: toRoleLabel(user.role),
+      mfaStatus: user.twoFactorEnabled ? "Enabled" : "Disabled",
+      appAccess: effectiveAppAccess(user),
+      avatarTone: user.avatarTone ?? "primary",
+      banned: user.banned === true,
+      createdAt: user.createdAt.toISOString(),
+    }));
+  },
+  "directoryUsers",
+);
 
 export async function inviteUser(draft: UserDraft): Promise<void> {
   "use server";
@@ -131,16 +148,22 @@ export async function inviteUser(draft: UserDraft): Promise<void> {
       emailVerified: true,
     },
   });
-  await auth.api.requestPasswordReset({ body: { email: clean.email, redirectTo: ROUTES.RESET_PASSWORD } });
+  await auth.api.requestPasswordReset({
+    body: { email: clean.email, redirectTo: ROUTES.RESET_PASSWORD },
+  });
 }
 
-export async function updateUser(userId: string, draft: UserDraft): Promise<void> {
+export async function updateUser(
+  userId: string,
+  draft: UserDraft,
+): Promise<void> {
   "use server";
   const actor = await requireActor();
   const target = await requireTarget(userId);
   const clean = cleanDraft(draft);
   assertMayAssign(actor, target.role, clean.role);
-  if (clean.role !== target.role) assertNotSelf(actor, target, "change the role of");
+  if (clean.role !== target.role)
+    assertNotSelf(actor, target, "change the role of");
 
   if (clean.role !== target.role) {
     await auth.api.setRole({
@@ -164,14 +187,20 @@ export async function updateUser(userId: string, draft: UserDraft): Promise<void
   }
 }
 
-export async function setUserBanned(userId: string, banned: boolean): Promise<void> {
+export async function setUserBanned(
+  userId: string,
+  banned: boolean,
+): Promise<void> {
   "use server";
   const actor = await requireActor();
   const target = await requireTarget(userId);
   assertMayAssign(actor, target.role, target.role);
   if (banned) {
     assertNotSelf(actor, target, "ban");
-    await auth.api.banUser({ body: { userId, banReason: "Banned by an administrator" }, headers: actor.headers });
+    await auth.api.banUser({
+      body: { userId, banReason: "Banned by an administrator" },
+      headers: actor.headers,
+    });
   } else {
     await auth.api.unbanUser({ body: { userId }, headers: actor.headers });
   }
@@ -191,9 +220,15 @@ export async function resetUserTwoFactor(userId: string): Promise<void> {
 
   await prisma.$transaction([
     prisma.twoFactor.deleteMany({ where: { userId } }),
-    prisma.user.update({ where: { id: userId }, data: { twoFactorEnabled: false } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: false },
+    }),
   ]);
-  await auth.api.revokeUserSessions({ body: { userId }, headers: actor.headers });
+  await auth.api.revokeUserSessions({
+    body: { userId },
+    headers: actor.headers,
+  });
 }
 
 export async function deleteUser(userId: string): Promise<void> {

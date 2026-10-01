@@ -25,7 +25,13 @@ export function AppAvatar(props: AppAvatarProps) {
         {props.initials}
       </Avatar.Fallback>
       <Show when={props.src}>
-        {(url) => <Avatar.Image src={url()} alt={props.label} class="h-full w-full rounded-full object-cover" />}
+        {(url) => (
+          <Avatar.Image
+            src={url()}
+            alt={props.label}
+            class="h-full w-full rounded-full object-cover"
+          />
+        )}
       </Show>
     </Avatar.Root>
   );

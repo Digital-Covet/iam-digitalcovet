@@ -6,8 +6,12 @@ export function BrandMark(props: { showLabel: boolean }) {
       </div>
       {props.showLabel && (
         <div class="flex flex-col">
-          <span class="font-heading text-sm font-bold leading-none tracking-tight">IAM CONSOLE</span>
-          <span class="mt-0.5 text-[9px] uppercase tracking-widest text-foreground-muted">Digital Covet</span>
+          <span class="font-heading text-sm font-bold leading-none tracking-tight">
+            IAM CONSOLE
+          </span>
+          <span class="mt-0.5 text-[9px] uppercase tracking-widest text-foreground-muted">
+            Digital Covet
+          </span>
         </div>
       )}
     </div>

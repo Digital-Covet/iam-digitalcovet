@@ -9,10 +9,18 @@ export function UserStatStrip(props: { stats: StatCardData[] }) {
         {(stat) => (
           <Card class="flex items-center justify-between p-4">
             <div>
-              <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">{stat.label}</p>
-              <p class="mt-2 font-heading text-[28px] font-bold leading-none tabular-nums tracking-[-0.02em]">{stat.value}</p>
+              <p class="text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted">
+                {stat.label}
+              </p>
+              <p class="mt-2 font-heading text-[28px] font-bold leading-none tabular-nums tracking-[-0.02em]">
+                {stat.value}
+              </p>
             </div>
-            <stat.icon size={20} stroke-width={1.75} class="text-foreground-muted" />
+            <stat.icon
+              size={20}
+              stroke-width={1.75}
+              class="text-foreground-muted"
+            />
           </Card>
         )}
       </For>

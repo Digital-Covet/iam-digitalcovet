@@ -21,9 +21,19 @@ export default function AccountSettingsPage() {
   return (
     <>
       <Title>{pageMetadata.accountSettings.title}</Title>
-      <Meta name="description" content={pageMetadata.accountSettings.description} />
+      <Meta
+        name="description"
+        content={pageMetadata.accountSettings.description}
+      />
       <AppShell>
-        <Suspense fallback={<PageHeader title={ACCOUNT_SETTINGS_TITLE} subtitle={ACCOUNT_SETTINGS_SUBTITLE} />}>
+        <Suspense
+          fallback={
+            <PageHeader
+              title={ACCOUNT_SETTINGS_TITLE}
+              subtitle={ACCOUNT_SETTINGS_SUBTITLE}
+            />
+          }
+        >
           <Show
             when={data()}
             fallback={

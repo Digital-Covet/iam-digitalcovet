@@ -7,7 +7,10 @@ export default function ResetPasswordPage() {
   return (
     <>
       <Title>{pageMetadata.resetPassword.title}</Title>
-      <Meta name="description" content={pageMetadata.resetPassword.description} />
+      <Meta
+        name="description"
+        content={pageMetadata.resetPassword.description}
+      />
       <AuthShell
         title="Choose a new password"
         subtitle="Set a strong password to regain access to your account"

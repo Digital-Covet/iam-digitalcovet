@@ -14,16 +14,25 @@ interface DrawerProps {
 /** Right-hand slide-over that keeps the page beneath it visible. Content mounts only while open. */
 export function Drawer(props: DrawerProps) {
   return (
-    <Dialog.Root open={props.open} onOpenChange={(event) => props.onOpenChange(event.open)} lazyMount unmountOnExit>
+    <Dialog.Root
+      open={props.open}
+      onOpenChange={(event) => props.onOpenChange(event.open)}
+      lazyMount
+      unmountOnExit
+    >
       <Portal>
         <Dialog.Backdrop class="drawer-backdrop fixed inset-0 z-40 bg-black/40" />
         <Dialog.Positioner class="fixed inset-0 z-50 flex justify-end">
           <Dialog.Content class="drawer-content flex h-full w-full max-w-[480px] flex-col border-l border-border bg-surface-raised shadow-2xl">
             <header class="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
               <div class="min-w-0">
-                <Dialog.Title class="truncate font-heading text-lg font-bold tracking-[-0.01em]">{props.title}</Dialog.Title>
+                <Dialog.Title class="truncate font-heading text-lg font-bold tracking-[-0.01em]">
+                  {props.title}
+                </Dialog.Title>
                 {props.description && (
-                  <Dialog.Description class="mt-1 text-[13px] text-foreground-muted">{props.description}</Dialog.Description>
+                  <Dialog.Description class="mt-1 text-[13px] text-foreground-muted">
+                    {props.description}
+                  </Dialog.Description>
                 )}
               </div>
               <Dialog.CloseTrigger

@@ -1,4 +1,4 @@
-import { type JSX } from "solid-js";
+import type { JSX } from "solid-js";
 
 interface AuthShellProps {
   title: string;
@@ -44,7 +44,8 @@ export function AuthShell(props: AuthShellProps) {
         </section>
 
         <p class="mt-8 text-center text-xs text-foreground-muted">
-          Authorized personnel only. All access attempts are logged for audit compliance.
+          Authorized personnel only. All access attempts are logged for audit
+          compliance.
         </p>
       </main>
     </div>

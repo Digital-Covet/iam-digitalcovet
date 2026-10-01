@@ -38,7 +38,8 @@ export function AccountMenu(props: AccountMenuProps) {
   const session = authClient.useSession();
   const user = () => session().data?.user as SessionUser | undefined;
   const navigate = useNavigate();
-  const onAccountPage = () => props.currentPath.startsWith(ROUTES.ACCOUNT_SETTINGS);
+  const onAccountPage = () =>
+    props.currentPath.startsWith(ROUTES.ACCOUNT_SETTINGS);
 
   function handleSelect(value: string) {
     if (value === MENU_ACCOUNT) {
@@ -51,19 +52,34 @@ export function AccountMenu(props: AccountMenuProps) {
 
   return (
     <div class="border-t border-border p-2">
-      <Menu.Root positioning={{ placement: "top-start", gutter: 8 }} onSelect={(details) => handleSelect(details.value)}>
+      <Menu.Root
+        positioning={{ placement: "top-start", gutter: 8 }}
+        onSelect={(details) => handleSelect(details.value)}
+      >
         <Menu.Trigger
           aria-label="Account menu"
           class="flex w-full items-center gap-2.5 rounded-md p-1 text-left transition-colors duration-[120ms] hover:bg-surface focus-visible:outline-2 focus-visible:outline-ring data-[state=open]:bg-surface"
           classList={{ "bg-primary/10": onAccountPage() }}
         >
-          <AppAvatar initials={toInitials(user()?.name ?? user()?.email ?? "")} label={user()?.email ?? "Account"} size="sm" />
+          <AppAvatar
+            initials={toInitials(user()?.name ?? user()?.email ?? "")}
+            label={user()?.email ?? "Account"}
+            size="sm"
+          />
           <Show when={!props.collapsed}>
             <div class="min-w-0 flex-1">
-              <p class="truncate text-xs font-medium">{user()?.name ?? user()?.email}</p>
-              <p class="font-mono text-[10px] uppercase text-foreground-muted">{user()?.role}</p>
+              <p class="truncate text-xs font-medium">
+                {user()?.name ?? user()?.email}
+              </p>
+              <p class="font-mono text-[10px] uppercase text-foreground-muted">
+                {user()?.role}
+              </p>
             </div>
-            <ChevronsUpDown size={14} stroke-width={1.75} class="shrink-0 text-foreground-muted" />
+            <ChevronsUpDown
+              size={14}
+              stroke-width={1.75}
+              class="shrink-0 text-foreground-muted"
+            />
           </Show>
         </Menu.Trigger>
 
@@ -74,7 +90,11 @@ export function AccountMenu(props: AccountMenuProps) {
                 value={MENU_ACCOUNT}
                 class={`${ITEM_CLASS} text-foreground data-[highlighted]:bg-surface`}
               >
-                <UserRound size={16} stroke-width={1.75} class="text-foreground-muted" />
+                <UserRound
+                  size={16}
+                  stroke-width={1.75}
+                  class="text-foreground-muted"
+                />
                 <span class="flex-1">Account settings</span>
               </Menu.Item>
 

@@ -1,10 +1,13 @@
 import Check from "lucide-solid/icons/check";
 import X from "lucide-solid/icons/x";
 import { createMemo, createSignal, For, Show } from "solid-js";
-import { TextField } from "@/components/ui/text-field";
 import { TONE_TEXT } from "@/components/ui/status-tone";
+import { TextField } from "@/components/ui/text-field";
+import {
+  type PolicyValues,
+  toPasswordPolicies,
+} from "@/lib/auth-policy-definitions";
 import { validatePassword } from "@/lib/password-validation";
-import { toPasswordPolicies, type PolicyValues } from "@/lib/auth-policy-definitions";
 
 const RULE_LABELS: Record<string, (policies: PolicyValues) => string> = {
   min_length: (policies) => `${policies.min_length}+ characters`,
@@ -16,11 +19,16 @@ const RULE_LABELS: Record<string, (policies: PolicyValues) => string> = {
 
 export function PolicyTester(props: { policies: PolicyValues }) {
   const [candidate, setCandidate] = createSignal("");
-  const checks = createMemo(() => validatePassword(candidate(), toPasswordPolicies(props.policies)).checks);
+  const checks = createMemo(
+    () =>
+      validatePassword(candidate(), toPasswordPolicies(props.policies)).checks,
+  );
 
   return (
     <div class="rounded-md border border-border bg-surface-raised p-4">
-      <h4 class="font-heading text-[15px] font-semibold text-foreground">Interactive Rule Tester</h4>
+      <h4 class="font-heading text-[15px] font-semibold text-foreground">
+        Interactive Rule Tester
+      </h4>
       <div class="mt-3">
         <TextField
           id="policy-tester-input"
@@ -41,7 +49,10 @@ export function PolicyTester(props: { policies: PolicyValues }) {
                 check.passed ? TONE_TEXT.success : TONE_TEXT.critical
               }`}
             >
-              <Show when={check.passed} fallback={<X size={12} stroke-width={1.75} />}>
+              <Show
+                when={check.passed}
+                fallback={<X size={12} stroke-width={1.75} />}
+              >
                 <Check size={12} stroke-width={1.75} />
               </Show>
               {RULE_LABELS[check.key](props.policies)}

@@ -10,7 +10,8 @@ import { TONE_TEXT } from "@/components/ui/status-tone";
 import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 
-const GENERIC_FAILURE = "Unable to reset your password. Request a new link and try again.";
+const GENERIC_FAILURE =
+  "Unable to reset your password. Request a new link and try again.";
 
 const SUBMIT_CLASS =
   "flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-fg " +
@@ -52,7 +53,11 @@ export function ResetPasswordForm() {
   const [pending, setPending] = createSignal(false);
 
   const mismatch = () => confirm().length > 0 && confirm() !== password();
-  const canSubmit = () => !pending() && password() !== "" && password() === confirm() && Boolean(token());
+  const canSubmit = () =>
+    !pending() &&
+    password() !== "" &&
+    password() === confirm() &&
+    Boolean(token());
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
@@ -89,9 +94,18 @@ export function ResetPasswordForm() {
         <Show
           when={token()}
           fallback={
-            <div role="alert" class="flex flex-col items-center gap-3 py-2 text-center">
-              <TriangleAlert size={22} stroke-width={1.75} class="text-critical-text" />
-              <p class="text-sm text-foreground">This reset link is missing its token or has already been used.</p>
+            <div
+              role="alert"
+              class="flex flex-col items-center gap-3 py-2 text-center"
+            >
+              <TriangleAlert
+                size={22}
+                stroke-width={1.75}
+                class="text-critical-text"
+              />
+              <p class="text-sm text-foreground">
+                This reset link is missing its token or has already been used.
+              </p>
               <A
                 href={ROUTES.FORGOT_PASSWORD}
                 class="text-xs text-primary underline-offset-2 hover:underline"
@@ -130,7 +144,11 @@ export function ResetPasswordForm() {
 
             <button type="submit" disabled={!canSubmit()} class={SUBMIT_CLASS}>
               <Show when={pending()}>
-                <LoaderCircle size={16} stroke-width={1.75} class="animate-spin" />
+                <LoaderCircle
+                  size={16}
+                  stroke-width={1.75}
+                  class="animate-spin"
+                />
               </Show>
               {pending() ? "Resetting." : "Set new password"}
             </button>
@@ -139,7 +157,10 @@ export function ResetPasswordForm() {
       </Show>
 
       <p class="mt-6 flex items-center justify-center gap-1.5 text-xs text-foreground-muted">
-        <A href={ROUTES.LOGIN} class="underline-offset-2 hover:text-foreground hover:underline">
+        <A
+          href={ROUTES.LOGIN}
+          class="underline-offset-2 hover:text-foreground hover:underline"
+        >
           Back to sign in
         </A>
       </p>

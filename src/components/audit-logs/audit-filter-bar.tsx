@@ -1,8 +1,16 @@
 import Search from "lucide-solid/icons/search";
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { FILTER_CONTROL as CONTROL, FilterSelect } from "@/components/ui/filter-select";
+import {
+  FILTER_CONTROL as CONTROL,
+  FilterSelect,
+} from "@/components/ui/filter-select";
 import { TextField } from "@/components/ui/text-field";
-import { EVENT_OPTIONS, RANGE_OPTIONS, STATUS_OPTIONS, TARGET_APP_OPTIONS } from "@/lib/audit-ledger-model";
+import {
+  EVENT_OPTIONS,
+  RANGE_OPTIONS,
+  STATUS_OPTIONS,
+  TARGET_APP_OPTIONS,
+} from "@/lib/audit-ledger-model";
 import type { AuditLedgerFilters } from "@/types";
 
 const ACTOR_DEBOUNCE_MS = 350;
@@ -36,7 +44,9 @@ export function AuditFilterBar(props: AuditFilterBarProps) {
         label="Time range"
         value={props.filters.range}
         options={RANGE_OPTIONS}
-        onChange={(range) => props.onChange({ range: range as AuditLedgerFilters["range"] })}
+        onChange={(range) =>
+          props.onChange({ range: range as AuditLedgerFilters["range"] })
+        }
       />
       <TextField
         id="audit-actor-search"
@@ -49,9 +59,24 @@ export function AuditFilterBar(props: AuditFilterBarProps) {
         leadingIcon={<Search size={14} stroke-width={1.75} />}
         onInput={updateActor}
       />
-      <FilterSelect label="Event type" value={props.filters.event} options={EVENT_OPTIONS} onChange={(event) => props.onChange({ event })} />
-      <FilterSelect label="Target app" value={props.filters.targetApp} options={TARGET_APP_OPTIONS} onChange={(targetApp) => props.onChange({ targetApp })} />
-      <FilterSelect label="Outcome" value={props.filters.status} options={STATUS_OPTIONS} onChange={(status) => props.onChange({ status })} />
+      <FilterSelect
+        label="Event type"
+        value={props.filters.event}
+        options={EVENT_OPTIONS}
+        onChange={(event) => props.onChange({ event })}
+      />
+      <FilterSelect
+        label="Target app"
+        value={props.filters.targetApp}
+        options={TARGET_APP_OPTIONS}
+        onChange={(targetApp) => props.onChange({ targetApp })}
+      />
+      <FilterSelect
+        label="Outcome"
+        value={props.filters.status}
+        options={STATUS_OPTIONS}
+        onChange={(status) => props.onChange({ status })}
+      />
     </div>
   );
 }

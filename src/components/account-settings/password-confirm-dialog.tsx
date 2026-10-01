@@ -15,7 +15,9 @@ interface PasswordConfirmDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function ConfirmForm(props: Omit<PasswordConfirmDialogProps, "open" | "title" | "description">) {
+function ConfirmForm(
+  props: Omit<PasswordConfirmDialogProps, "open" | "title" | "description">,
+) {
   const [password, setPassword] = createSignal("");
   const [error, setError] = createSignal<string | null>(null);
   const [pending, setPending] = createSignal(false);
@@ -36,12 +38,27 @@ function ConfirmForm(props: Omit<PasswordConfirmDialogProps, "open" | "title" | 
   return (
     <form onSubmit={submit} class="space-y-4" novalidate>
       <AuthErrorAlert message={error()} />
-      <PasswordField id="confirm-action-password" label="Current Password" autocomplete="current-password" autofocus value={password()} onInput={setPassword} />
+      <PasswordField
+        id="confirm-action-password"
+        label="Current Password"
+        autocomplete="current-password"
+        autofocus
+        value={password()}
+        onInput={setPassword}
+      />
       <div class="flex justify-end gap-2">
-        <button type="button" onClick={() => props.onOpenChange(false)} class={BUTTON_OUTLINE}>
+        <button
+          type="button"
+          onClick={() => props.onOpenChange(false)}
+          class={BUTTON_OUTLINE}
+        >
           Cancel
         </button>
-        <button type="submit" disabled={pending() || !password()} class={`${BUTTON_PRIMARY} disabled:cursor-not-allowed disabled:opacity-60`}>
+        <button
+          type="submit"
+          disabled={pending() || !password()}
+          class={`${BUTTON_PRIMARY} disabled:cursor-not-allowed disabled:opacity-60`}
+        >
           <Show when={pending()}>
             <LoaderCircle size={16} stroke-width={1.75} class="animate-spin" />
           </Show>
@@ -54,7 +71,12 @@ function ConfirmForm(props: Omit<PasswordConfirmDialogProps, "open" | "title" | 
 
 export function PasswordConfirmDialog(props: PasswordConfirmDialogProps) {
   return (
-    <Modal open={props.open} title={props.title} description={props.description} onOpenChange={props.onOpenChange}>
+    <Modal
+      open={props.open}
+      title={props.title}
+      description={props.description}
+      onOpenChange={props.onOpenChange}
+    >
       <ConfirmForm
         confirmLabel={props.confirmLabel}
         onConfirm={props.onConfirm}

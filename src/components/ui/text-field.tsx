@@ -34,7 +34,11 @@ interface TextFieldProps {
 
 export function TextField(props: TextFieldProps) {
   return (
-    <Field.Root invalid={props.invalid ?? props.error != null} disabled={props.disabled} required={props.required}>
+    <Field.Root
+      invalid={props.invalid ?? props.error != null}
+      disabled={props.disabled}
+      required={props.required}
+    >
       <Field.Label
         for={props.id}
         class={
@@ -67,11 +71,15 @@ export function TextField(props: TextFieldProps) {
         />
       </div>
       <Show when={props.helper}>
-        <Field.HelperText class="mt-1 text-xs text-foreground-muted">{props.helper}</Field.HelperText>
+        <Field.HelperText class="mt-1 text-xs text-foreground-muted">
+          {props.helper}
+        </Field.HelperText>
       </Show>
       <Show when={props.error}>
         {(message) => (
-          <Field.ErrorText class="mt-1 text-xs text-red-800 dark:text-red-400">{message()}</Field.ErrorText>
+          <Field.ErrorText class="mt-1 text-xs text-red-800 dark:text-red-400">
+            {message()}
+          </Field.ErrorText>
         )}
       </Show>
     </Field.Root>

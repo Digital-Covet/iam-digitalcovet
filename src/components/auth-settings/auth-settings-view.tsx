@@ -1,10 +1,14 @@
 import { revalidate } from "@solidjs/router";
 import { createMemo, createSignal, For, type JSX } from "solid-js";
+import { toaster } from "@/components/auth/auth-toaster";
 import { PolicyField } from "@/components/auth-settings/policy-fields";
 import { PolicyTester } from "@/components/auth-settings/policy-tester";
-import { toaster } from "@/components/auth/auth-toaster";
 import { Card, CardHeader } from "@/components/ui/card";
-import { BUTTON_OUTLINE, BUTTON_PRIMARY, PageHeader } from "@/components/ui/page-header";
+import {
+  BUTTON_OUTLINE,
+  BUTTON_PRIMARY,
+  PageHeader,
+} from "@/components/ui/page-header";
 import { getAuthPolicies, saveAuthPolicies } from "@/lib/auth-policies";
 import {
   definitionsInGroup,
@@ -21,7 +25,9 @@ const GROUP_TITLES: Record<PolicyGroup, string> = {
 };
 
 function changedKeys(saved: PolicyValues, draft: PolicyValues): PolicyKey[] {
-  return POLICY_DEFINITIONS.map((d) => d.key).filter((key) => saved[key] !== draft[key]);
+  return POLICY_DEFINITIONS.map((d) => d.key).filter(
+    (key) => saved[key] !== draft[key],
+  );
 }
 
 function PolicyGroupCard(props: {
@@ -56,21 +62,29 @@ export function AuthSettingsView(props: { policies: PolicyValues }) {
   const dirtyKeys = createMemo(() => changedKeys(saved(), draft()));
   const isDirty = () => dirtyKeys().length > 0;
 
-  const updateDraft = (key: PolicyKey, value: PolicyValue) => setDraft((current) => ({ ...current, [key]: value }));
+  const updateDraft = (key: PolicyKey, value: PolicyValue) =>
+    setDraft((current) => ({ ...current, [key]: value }));
 
   async function save() {
     const submitted = draft();
-    const changes = Object.fromEntries(dirtyKeys().map((key) => [key, submitted[key]]));
+    const changes = Object.fromEntries(
+      dirtyKeys().map((key) => [key, submitted[key]]),
+    );
     setSaving(true);
     try {
       await saveAuthPolicies(changes);
       setSaved(submitted);
       await revalidate(getAuthPolicies.key);
-      toaster.create({ title: "Policies saved", description: "New thresholds apply from the next sign-in.", type: "success" });
+      toaster.create({
+        title: "Policies saved",
+        description: "New thresholds apply from the next sign-in.",
+        type: "success",
+      });
     } catch (error) {
       toaster.create({
         title: "Could not save policies",
-        description: error instanceof Error ? error.message : "Try again in a moment.",
+        description:
+          error instanceof Error ? error.message : "Try again in a moment.",
         type: "error",
       });
     } finally {
@@ -85,20 +99,39 @@ export function AuthSettingsView(props: { policies: PolicyValues }) {
         subtitle="Configure organizational credentials standards and account lockout heuristics"
         actions={
           <>
-            <button type="button" class={`${BUTTON_OUTLINE} disabled:opacity-50`} disabled={!isDirty() || saving()} onClick={() => setDraft(saved())}>
+            <button
+              type="button"
+              class={`${BUTTON_OUTLINE} disabled:opacity-50`}
+              disabled={!isDirty() || saving()}
+              onClick={() => setDraft(saved())}
+            >
               Discard
             </button>
-            <button type="button" class={`${BUTTON_PRIMARY} disabled:opacity-50`} disabled={!isDirty() || saving()} onClick={save}>
+            <button
+              type="button"
+              class={`${BUTTON_PRIMARY} disabled:opacity-50`}
+              disabled={!isDirty() || saving()}
+              onClick={save}
+            >
               {saving() ? "Saving…" : "Save Policy Changes"}
             </button>
           </>
         }
       />
-      <p class="mb-4 font-mono text-xs text-foreground-muted" aria-live="polite">
-        {isDirty() ? `${dirtyKeys().length} unsaved ${dirtyKeys().length === 1 ? "change" : "changes"}` : "No unsaved policy modifications"}
+      <p
+        class="mb-4 font-mono text-xs text-foreground-muted"
+        aria-live="polite"
+      >
+        {isDirty()
+          ? `${dirtyKeys().length} unsaved ${dirtyKeys().length === 1 ? "change" : "changes"}`
+          : "No unsaved policy modifications"}
       </p>
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <PolicyGroupCard group="password" draft={draft()} onChange={updateDraft} />
+        <PolicyGroupCard
+          group="password"
+          draft={draft()}
+          onChange={updateDraft}
+        />
         <PolicyGroupCard group="lockout" draft={draft()} onChange={updateDraft}>
           <div class="px-4 pb-4">
             <PolicyTester policies={draft()} />

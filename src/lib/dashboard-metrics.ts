@@ -51,9 +51,12 @@ const TARGET_APP_LABELS: Record<string, AuditLogEntry["targetApp"]> = {
   desk: "Desk",
 };
 
-export const toEventLabel = (event: string) => EVENT_LABELS[event] ?? "Session Initiated";
-export const toStatusLabel = (status: string) => STATUS_LABELS[status] ?? "Warning";
-export const toTargetAppLabel = (app: string) => TARGET_APP_LABELS[app] ?? "IAM System";
+export const toEventLabel = (event: string) =>
+  EVENT_LABELS[event] ?? "Session Initiated";
+export const toStatusLabel = (status: string) =>
+  STATUS_LABELS[status] ?? "Warning";
+export const toTargetAppLabel = (app: string) =>
+  TARGET_APP_LABELS[app] ?? "IAM System";
 
 const formatCount = (value: number) => value.toLocaleString("en-US");
 
@@ -82,7 +85,10 @@ export function buildMetrics(counts: DashboardCounts): DashboardMetric[] {
       id: "mfa-adoption",
       label: "MFA Adoption",
       value: formatPercent(counts.mfaEnrolledUsers, counts.totalUsers),
-      detail: unenrolled === 0 ? "All users enrolled" : `${formatCount(unenrolled)} users unenrolled`,
+      detail:
+        unenrolled === 0
+          ? "All users enrolled"
+          : `${formatCount(unenrolled)} users unenrolled`,
       tone: unenrolled === 0 ? "success" : "warning",
     },
     {
@@ -90,12 +96,17 @@ export function buildMetrics(counts: DashboardCounts): DashboardMetric[] {
       label: "Auth Failures (24h)",
       value: formatCount(counts.authFailures24h),
       detail: `Lockouts: ${formatCount(counts.lockedAccounts)}`,
-      tone: counts.authFailures24h === 0 && counts.lockedAccounts === 0 ? "success" : "critical",
+      tone:
+        counts.authFailures24h === 0 && counts.lockedAccounts === 0
+          ? "success"
+          : "critical",
     },
   ];
 }
 
-function resolveClientStatus(client: OAuthClientRecord | undefined): ClientStatus {
+function resolveClientStatus(
+  client: OAuthClientRecord | undefined,
+): ClientStatus {
   if (!client) return "unregistered";
   return client.disabled ? "disabled" : "active";
 }
@@ -109,7 +120,9 @@ export function buildAppHealth(input: AppHealthInput): AppHealth {
   };
 }
 
-export function buildSessionShares(sessionsByApp: Readonly<Record<AppAccess, number>>): SessionShare[] {
+export function buildSessionShares(
+  sessionsByApp: Readonly<Record<AppAccess, number>>,
+): SessionShare[] {
   const total = ALL_APPS.reduce((sum, app) => sum + sessionsByApp[app], 0);
 
   return ALL_APPS.map((app) => ({

@@ -4,12 +4,25 @@ import RotateCcw from "lucide-solid/icons/rotate-ccw";
 import ShieldOff from "lucide-solid/icons/shield-off";
 import Trash2 from "lucide-solid/icons/trash";
 import UserCheck from "lucide-solid/icons/user-check";
-import { canManageUser, type DirectoryActor, isSelf } from "@/lib/user-directory";
+import {
+  canManageUser,
+  type DirectoryActor,
+  isSelf,
+} from "@/lib/user-directory";
 import { deleteUser, resetUserTwoFactor, setUserBanned } from "@/lib/users";
 import type { DirectoryUser, Icon } from "@/types";
 
-export type RowAction = "edit" | "impersonate" | "reset-2fa" | "ban" | "unban" | "delete";
-export type ConfirmedAction = Extract<RowAction, "reset-2fa" | "ban" | "delete">;
+export type RowAction =
+  | "edit"
+  | "impersonate"
+  | "reset-2fa"
+  | "ban"
+  | "unban"
+  | "delete";
+export type ConfirmedAction = Extract<
+  RowAction,
+  "reset-2fa" | "ban" | "delete"
+>;
 
 interface RowActionDefinition {
   label: string;
@@ -27,7 +40,10 @@ export const ROW_ACTIONS: Record<RowAction, RowActionDefinition> = {
 };
 
 /** Self-targeting and cross-tier actions are hidden here and refused again by the server. */
-export function availableActions(user: DirectoryUser, actor: DirectoryActor): RowAction[] {
+export function availableActions(
+  user: DirectoryUser,
+  actor: DirectoryActor,
+): RowAction[] {
   if (!canManageUser(actor, user)) return [];
   if (isSelf(actor, user)) return ["edit"];
   const actions: RowAction[] = ["edit"];
@@ -56,14 +72,16 @@ export const CONFIRMATIONS: Record<ConfirmedAction, Confirmation> = {
   },
   ban: {
     title: "Suspend this user?",
-    describe: (user) => `${user.name} will be signed out and unable to sign in to any Digital Covet app until restored.`,
+    describe: (user) =>
+      `${user.name} will be signed out and unable to sign in to any Digital Covet app until restored.`,
     confirmLabel: "Suspend",
     success: "User suspended",
     run: (userId) => setUserBanned(userId, true),
   },
   delete: {
     title: "Delete this user?",
-    describe: (user) => `${user.email} and all of their sessions will be permanently removed. This cannot be undone.`,
+    describe: (user) =>
+      `${user.email} and all of their sessions will be permanently removed. This cannot be undone.`,
     confirmLabel: "Delete user",
     success: "User deleted",
     run: deleteUser,

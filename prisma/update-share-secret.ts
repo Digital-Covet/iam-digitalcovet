@@ -3,8 +3,13 @@ import { createHash } from "node:crypto";
 import { PrismaClient } from "@generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set");
+}
+
 const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
 });
 
 const prisma = new PrismaClient({ adapter });
@@ -28,7 +33,9 @@ async function main() {
   });
 
   if (!client) {
-    console.error("OAuth client 'share' not found in database. Run the full seed first.");
+    console.error(
+      "OAuth client 'share' not found in database. Run the full seed first.",
+    );
     process.exit(1);
   }
 

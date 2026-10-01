@@ -2,7 +2,10 @@ import LoaderCircle from "lucide-solid/icons/loader-circle";
 import { createSignal, Show } from "solid-js";
 import { Modal } from "@/components/ui/modal";
 import { BUTTON_OUTLINE, BUTTON_PRIMARY } from "@/components/ui/page-header";
-import { CONFIRMATIONS, type ConfirmedAction } from "@/components/user-directory/user-actions";
+import {
+  CONFIRMATIONS,
+  type ConfirmedAction,
+} from "@/components/user-directory/user-actions";
 import type { DirectoryUser } from "@/types";
 
 export interface PendingConfirmation {
@@ -18,7 +21,8 @@ interface ConfirmActionModalProps {
 
 export function ConfirmActionModal(props: ConfirmActionModalProps) {
   const [working, setWorking] = createSignal(false);
-  const config = () => (props.pending ? CONFIRMATIONS[props.pending.action] : null);
+  const config = () =>
+    props.pending ? CONFIRMATIONS[props.pending.action] : null;
 
   async function confirm() {
     if (!props.pending) return;
@@ -34,11 +38,18 @@ export function ConfirmActionModal(props: ConfirmActionModalProps) {
     <Modal
       open={props.pending !== null}
       title={config()?.title ?? ""}
-      description={props.pending ? config()?.describe(props.pending.user) : undefined}
+      description={
+        props.pending ? config()?.describe(props.pending.user) : undefined
+      }
       onOpenChange={(open) => !open && !working() && props.onCancel()}
     >
       <div class="flex justify-end gap-2">
-        <button type="button" class={BUTTON_OUTLINE} disabled={working()} onClick={props.onCancel}>
+        <button
+          type="button"
+          class={BUTTON_OUTLINE}
+          disabled={working()}
+          onClick={props.onCancel}
+        >
           Cancel
         </button>
         <button

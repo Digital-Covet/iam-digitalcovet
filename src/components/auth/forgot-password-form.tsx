@@ -8,7 +8,8 @@ import { TextField } from "@/components/ui/text-field";
 import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 
-const GENERIC_FAILURE = "Unable to send the reset link right now. Please try again.";
+const GENERIC_FAILURE =
+  "Unable to send the reset link right now. Please try again.";
 
 function BackToSignIn() {
   return (
@@ -31,11 +32,16 @@ function ResetLinkSent(props: { email: string; onRetry: () => void }) {
         <MailCheck size={20} stroke-width={1.75} />
       </div>
       <div class="space-y-2">
-        <h2 class="font-heading text-lg font-bold tracking-[-0.01em]">Check your inbox</h2>
+        <h2 class="font-heading text-lg font-bold tracking-[-0.01em]">
+          Check your inbox
+        </h2>
         <p class="text-[13.5px] leading-[1.65] text-foreground-muted">
           If an account exists for{" "}
-          <span class="break-all font-mono text-xs text-foreground">{props.email}</span>, a password
-          reset link is on its way. The link expires shortly, so use it soon.
+          <span class="break-all font-mono text-xs text-foreground">
+            {props.email}
+          </span>
+          , a password reset link is on its way. The link expires shortly, so
+          use it soon.
         </p>
       </div>
       <button
@@ -86,8 +92,8 @@ export function ForgotPasswordForm() {
       fallback={
         <form onSubmit={handleSubmit} class="space-y-5" novalidate>
           <p class="text-[13.5px] leading-[1.65] text-foreground-muted">
-            Enter the email address linked to your Covet ID and we'll send you a link to set a new
-            password.
+            Enter the email address linked to your Covet ID and we'll send you a
+            link to set a new password.
           </p>
 
           <AuthErrorAlert message={error()} />
@@ -110,7 +116,11 @@ export function ForgotPasswordForm() {
             class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-fg transition-colors duration-[120ms] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Show when={pending()}>
-              <LoaderCircle size={16} stroke-width={1.75} class="animate-spin" />
+              <LoaderCircle
+                size={16}
+                stroke-width={1.75}
+                class="animate-spin"
+              />
             </Show>
             {pending() ? "Sending…" : "Send Reset Link"}
           </button>
@@ -119,7 +129,9 @@ export function ForgotPasswordForm() {
         </form>
       }
     >
-      {(address) => <ResetLinkSent email={address()} onRetry={() => setSentTo(null)} />}
+      {(address) => (
+        <ResetLinkSent email={address()} onRetry={() => setSentTo(null)} />
+      )}
     </Show>
   );
 }

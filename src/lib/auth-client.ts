@@ -1,12 +1,14 @@
-import { adminClient, emailOTPClient, twoFactorClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/solid";
 import { oauthProviderClient } from "@better-auth/oauth-provider/client";
+import {
+  adminClient,
+  emailOTPClient,
+  twoFactorClient,
+} from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/solid";
 
 export const authClient = createAuthClient({
   baseURL:
-    typeof window === "undefined"
-      ? process.env.BETTER_AUTH_URL
-      : undefined,
+    typeof window === "undefined" ? process.env.BETTER_AUTH_URL : undefined,
 
   plugins: [
     twoFactorClient({
@@ -18,7 +20,9 @@ export const authClient = createAuthClient({
             url.searchParams.has("response_type") &&
             url.searchParams.has("code_challenge");
           if (isOAuthFlow) {
-            window.location.replace(`/auth/verify-2fa${window.location.search}`);
+            window.location.replace(
+              `/auth/verify-2fa${window.location.search}`,
+            );
           } else {
             const redirect = url.searchParams.get("redirect");
             const target = redirect

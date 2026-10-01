@@ -4,7 +4,11 @@ import { Show, Suspense } from "solid-js";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { KpiStripSkeleton } from "@/components/dashboard/kpi-strip";
 import { AppShell } from "@/components/layout/app-shell";
-import { BUTTON_OUTLINE, BUTTON_PRIMARY, PageHeader } from "@/components/ui/page-header";
+import {
+  BUTTON_OUTLINE,
+  BUTTON_PRIMARY,
+  PageHeader,
+} from "@/components/ui/page-header";
 import { getDashboardData } from "@/lib/dashboard";
 import { pageMetadata } from "@/lib/seo";
 

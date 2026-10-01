@@ -1,9 +1,16 @@
 import { ALL_APPS, ELEVATED_ROLES } from "@/lib/app-access";
 import { toRoleLabel } from "@/lib/roles";
-import type { PermissionGroup, RoleDefinition, RolePermission, UserRole } from "@/types";
+import type {
+  PermissionGroup,
+  RoleDefinition,
+  RolePermission,
+  UserRole,
+} from "@/types";
 
 /** Better Auth access-control statements: resource name to the actions a role may perform. */
-export type RoleStatements = Readonly<Record<string, readonly string[] | undefined>>;
+export type RoleStatements = Readonly<
+  Record<string, readonly string[] | undefined>
+>;
 
 interface ActionSpec {
   action: string;
@@ -34,7 +41,11 @@ const STATEMENT_GROUPS: StatementGroupSpec[] = [
       { action: "ban", label: "Suspend users" },
       { action: "delete", label: "Delete users", elevated: true },
       { action: "impersonate", label: "Impersonate users", elevated: true },
-      { action: "impersonate-admins", label: "Impersonate administrators", elevated: true },
+      {
+        action: "impersonate-admins",
+        label: "Impersonate administrators",
+        elevated: true,
+      },
     ],
   },
   {
@@ -55,9 +66,12 @@ const CONSOLE_ACCESS: ReadonlyArray<{ key: string; label: string }> = [
 ];
 
 const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
-  SuperAdmin: "Full administrative control, including impersonating other administrators.",
-  Admin: "Manages users, sessions and every connected app. Cannot impersonate administrators.",
-  Employee: "Baseline role for company staff. Reaches only the apps assigned to each person.",
+  SuperAdmin:
+    "Full administrative control, including impersonating other administrators.",
+  Admin:
+    "Manages users, sessions and every connected app. Cannot impersonate administrators.",
+  Employee:
+    "Baseline role for company staff. Reaches only the apps assigned to each person.",
 };
 
 export interface RoleDefinitionInput {
@@ -79,7 +93,10 @@ function buildAppGroup(isElevated: boolean): PermissionGroup {
   };
 }
 
-function buildStatementGroup(spec: StatementGroupSpec, statements: RoleStatements): PermissionGroup {
+function buildStatementGroup(
+  spec: StatementGroupSpec,
+  statements: RoleStatements,
+): PermissionGroup {
   const allowed = statements[spec.resource] ?? [];
   return {
     id: spec.id,
@@ -107,7 +124,9 @@ function buildConsoleGroup(isElevated: boolean): PermissionGroup {
   };
 }
 
-export function buildRoleDefinition(input: RoleDefinitionInput): RoleDefinition {
+export function buildRoleDefinition(
+  input: RoleDefinitionInput,
+): RoleDefinition {
   const name = toRoleLabel(input.roleValue);
   const isElevated = ELEVATED_ROLES.has(input.roleValue);
 
@@ -118,16 +137,22 @@ export function buildRoleDefinition(input: RoleDefinitionInput): RoleDefinition 
     userCount: input.userCount,
     groups: [
       buildAppGroup(isElevated),
-      ...STATEMENT_GROUPS.map((spec) => buildStatementGroup(spec, input.statements)),
+      ...STATEMENT_GROUPS.map((spec) =>
+        buildStatementGroup(spec, input.statements),
+      ),
       buildConsoleGroup(isElevated),
     ],
   };
 }
 
-export function countGrantedPermissions(role: RoleDefinition): { granted: number; total: number } {
+export function countGrantedPermissions(role: RoleDefinition): {
+  granted: number;
+  total: number;
+} {
   const permissions = role.groups.flatMap((group) => group.permissions);
   return {
-    granted: permissions.filter((permission) => permission.access === "granted").length,
+    granted: permissions.filter((permission) => permission.access === "granted")
+      .length,
     total: permissions.length,
   };
 }

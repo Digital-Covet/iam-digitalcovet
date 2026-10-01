@@ -8,7 +8,10 @@ export default function ConsentPage() {
     <>
       <Title>{pageMetadata.consent.title}</Title>
       <Meta name="description" content={pageMetadata.consent.description} />
-      <AuthShell title="Authorize Application Access" subtitle="Review what this app can access before you continue">
+      <AuthShell
+        title="Authorize Application Access"
+        subtitle="Review what this app can access before you continue"
+      >
         <ConsentView />
       </AuthShell>
     </>

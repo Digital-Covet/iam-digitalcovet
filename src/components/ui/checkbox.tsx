@@ -21,7 +21,9 @@ export function ArkCheckbox(props: ArkCheckboxProps) {
           <Check size={12} stroke-width={2.5} />
         </Checkbox.Indicator>
       </Checkbox.Control>
-      <Checkbox.Label class="cursor-pointer text-foreground">{props.label}</Checkbox.Label>
+      <Checkbox.Label class="cursor-pointer text-foreground">
+        {props.label}
+      </Checkbox.Label>
       <Checkbox.HiddenInput />
     </Checkbox.Root>
   );

@@ -38,7 +38,10 @@ function ToggleField(props: FieldProps<ToggleDefinition, boolean>) {
       onCheckedChange={(details) => props.onChange(details.checked)}
     >
       <Switch.Label class="cursor-pointer">
-        <FieldCopy label={props.definition.label} description={props.definition.description} />
+        <FieldCopy
+          label={props.definition.label}
+          description={props.definition.description}
+        />
       </Switch.Label>
       <Switch.Control class="relative mt-0.5 inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-border transition-colors duration-[120ms] data-[state=checked]:bg-primary data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-ring">
         <Switch.Thumb class="block h-4 w-4 translate-x-0.5 rounded-full bg-white shadow-xs transition-transform duration-[120ms] data-[state=checked]:translate-x-[18px]" />
@@ -60,7 +63,10 @@ function RangeField(props: FieldProps<NumericDefinition, number>) {
     >
       <div class="flex items-start justify-between gap-4">
         <Slider.Label>
-          <FieldCopy label={props.definition.label} description={props.definition.description} />
+          <FieldCopy
+            label={props.definition.label}
+            description={props.definition.description}
+          />
         </Slider.Label>
         <span class="shrink-0 rounded bg-surface-raised px-2 py-0.5 font-mono text-xs tabular-nums text-foreground">
           {props.value} {props.definition.unit}
@@ -93,29 +99,43 @@ function NumberField(props: FieldProps<NumericDefinition, number>) {
       max={props.definition.max}
       value={String(props.value)}
       onValueChange={(details) => {
-        if (!Number.isNaN(details.valueAsNumber)) props.onChange(details.valueAsNumber);
+        if (!Number.isNaN(details.valueAsNumber))
+          props.onChange(details.valueAsNumber);
       }}
     >
       <NumberInput.Label>
-        <FieldCopy label={props.definition.label} description={props.definition.description} />
+        <FieldCopy
+          label={props.definition.label}
+          description={props.definition.description}
+        />
       </NumberInput.Label>
       <div class="flex shrink-0 items-center gap-2">
         <NumberInput.Control class="flex items-center gap-1">
-          <NumberInput.DecrementTrigger class={STEPPER_BUTTON} aria-label={`Decrease ${props.definition.label}`}>
+          <NumberInput.DecrementTrigger
+            class={STEPPER_BUTTON}
+            aria-label={`Decrease ${props.definition.label}`}
+          >
             <Minus size={14} stroke-width={1.75} />
           </NumberInput.DecrementTrigger>
           <NumberInput.Input class="h-8 w-16 rounded-md border border-border bg-surface px-2 text-center font-mono text-sm tabular-nums text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" />
-          <NumberInput.IncrementTrigger class={STEPPER_BUTTON} aria-label={`Increase ${props.definition.label}`}>
+          <NumberInput.IncrementTrigger
+            class={STEPPER_BUTTON}
+            aria-label={`Increase ${props.definition.label}`}
+          >
             <Plus size={14} stroke-width={1.75} />
           </NumberInput.IncrementTrigger>
         </NumberInput.Control>
-        <span class="w-16 text-xs text-foreground-muted">{props.definition.unit}</span>
+        <span class="w-16 text-xs text-foreground-muted">
+          {props.definition.unit}
+        </span>
       </div>
     </NumberInput.Root>
   );
 }
 
-export function PolicyField(props: FieldProps<PolicyDefinition, PolicyValue>): JSX.Element {
+export function PolicyField(
+  props: FieldProps<PolicyDefinition, PolicyValue>,
+): JSX.Element {
   const definition = props.definition;
   if (definition.control === "toggle") {
     return (
@@ -127,5 +147,11 @@ export function PolicyField(props: FieldProps<PolicyDefinition, PolicyValue>): J
     );
   }
   const Field = definition.control === "range" ? RangeField : NumberField;
-  return <Field definition={definition} value={props.value as number} onChange={props.onChange} />;
+  return (
+    <Field
+      definition={definition}
+      value={props.value as number}
+      onChange={props.onChange}
+    />
+  );
 }

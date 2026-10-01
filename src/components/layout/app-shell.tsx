@@ -16,13 +16,17 @@ export function AppShell(props: { children: JSX.Element }) {
 
   const impersonatedEmail = () => {
     const data = session().data;
-    const impersonated = (data?.session as { impersonatedBy?: string | null } | undefined)?.impersonatedBy;
+    const impersonated = (
+      data?.session as { impersonatedBy?: string | null } | undefined
+    )?.impersonatedBy;
     return impersonated ? data?.user.email : undefined;
   };
 
   return (
     <div class="flex h-screen flex-col bg-background font-sans text-foreground antialiased">
-      <Show when={impersonatedEmail()}>{(email) => <ImpersonationBanner email={email()} />}</Show>
+      <Show when={impersonatedEmail()}>
+        {(email) => <ImpersonationBanner email={email()} />}
+      </Show>
 
       <div class="flex flex-1 overflow-hidden">
         <aside
@@ -51,7 +55,10 @@ export function AppShell(props: { children: JSX.Element }) {
               <ChevronRight size={16} />
             </button>
           </Show>
-          <SidebarContent currentPath={location.pathname} collapsed={collapsed()} />
+          <SidebarContent
+            currentPath={location.pathname}
+            collapsed={collapsed()}
+          />
         </aside>
 
         <main class="flex min-w-0 flex-1 flex-col overflow-y-auto">
@@ -66,11 +73,17 @@ export function AppShell(props: { children: JSX.Element }) {
               <Menu size={20} />
             </button>
           </header>
-          <div class="mx-auto w-full max-w-[1440px] flex-1 p-4 md:p-6">{props.children}</div>
+          <div class="mx-auto w-full max-w-[1440px] flex-1 p-4 md:p-6">
+            {props.children}
+          </div>
         </main>
       </div>
 
-      <MobileNavDrawer open={mobileOpen()} currentPath={location.pathname} onOpenChange={setMobileOpen} />
+      <MobileNavDrawer
+        open={mobileOpen()}
+        currentPath={location.pathname}
+        onOpenChange={setMobileOpen}
+      />
     </div>
   );
 }

@@ -21,8 +21,10 @@ export const TONE_TEXT: Record<StatusTone, string> = {
 };
 
 export const TONE_PILL: Record<StatusTone, string> = {
-  success: "bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400",
-  warning: "bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
+  success:
+    "bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400",
+  warning:
+    "bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400",
   critical: "bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-400",
   neutral: "bg-surface-raised text-foreground-muted",
 };

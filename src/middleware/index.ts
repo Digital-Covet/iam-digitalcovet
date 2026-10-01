@@ -14,16 +14,13 @@ function applyCorsHeaders(headers: Headers, origin: string) {
   headers.set("Access-Control-Allow-Credentials", "true");
   headers.set(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   );
-  headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization"
-  );
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   headers.set("Access-Control-Max-Age", "86400");
   headers.append(
     "Vary",
-    "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+    "Origin, Access-Control-Request-Method, Access-Control-Request-Headers",
   );
 }
 
