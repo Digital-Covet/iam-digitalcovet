@@ -7,7 +7,7 @@ import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
 import { TextField } from "@/components/ui/text-field";
 import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
-import { resolveSafeRedirect } from "@/lib/safe-redirect";
+import { resolvePostAuthDestination } from "@/lib/oauth-flow";
 
 const CODE_LENGTH = 6;
 const PIN_CELLS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
@@ -24,14 +24,6 @@ const PIN_CELL_CLASS =
   "data-[invalid]:border-critical-text disabled:opacity-60";
 
 type VerifyMode = "totp" | "backup";
-
-function isOAuthFlow(params: URLSearchParams): boolean {
-  return (
-    params.has("client_id") &&
-    params.has("response_type") &&
-    params.has("code_challenge")
-  );
-}
 
 export function TwoFactorVerify(props: { redirectTo: string | null }) {
   const [mode, setMode] = createSignal<VerifyMode>("totp");
@@ -59,12 +51,10 @@ export function TwoFactorVerify(props: { redirectTo: string | null }) {
   }
 
   function continueAfterVerification() {
-    const params = new URLSearchParams(window.location.search);
     // Sign-in in a downstream-app flow must resume the interrupted authorization request.
-    const destination = isOAuthFlow(params)
-      ? `/api/auth/oauth2/authorize?${params.toString()}`
-      : resolveSafeRedirect(props.redirectTo);
-    window.location.assign(destination);
+    window.location.assign(
+      resolvePostAuthDestination(window.location.search, props.redirectTo),
+    );
   }
 
   async function verify(code: string) {

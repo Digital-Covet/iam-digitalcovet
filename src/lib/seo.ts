@@ -75,6 +75,11 @@ export const pageMetadata = {
     title: "Two-Factor Verification | Send Digital Covet",
     description: "Complete two-factor authentication to access your account.",
   },
+  setup2fa: {
+    title: "Set Up Two-Factor | IAM Digital Covet",
+    description:
+      "Pair an authenticator app and save backup codes to secure your account.",
+  },
   consent: {
     title: "Authorize Access | Send Digital Covet",
     description:

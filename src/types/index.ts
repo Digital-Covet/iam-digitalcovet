@@ -37,7 +37,6 @@ export interface UserDraft {
   email: string;
   role: UserRole;
   appAccess: AppAccess[];
-  requireMfa: boolean;
 }
 
 export interface NavItem {

@@ -154,12 +154,6 @@ function UserForm(props: UserFormProps) {
         </Show>
       </Fieldset.Root>
 
-      <ArkCheckbox
-        label="Require two-factor authentication"
-        checked={draft().requireMfa}
-        onChange={(requireMfa) => patch({ requireMfa })}
-      />
-
       <Show when={!isEditing()}>
         <p class="rounded-md bg-surface p-3 text-xs text-foreground-muted">
           The invitee receives an email with a link to set their own password.

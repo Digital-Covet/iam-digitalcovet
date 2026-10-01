@@ -9,6 +9,7 @@ import { CLIENT_APPS } from "@/lib/app-access";
 import { authClient } from "@/lib/auth-client";
 import { verifyConsentQuery } from "@/lib/consent-request";
 import { ROUTES } from "@/lib/constants";
+import { redirectTarget } from "@/lib/oauth-flow";
 import { parseScopes } from "@/lib/oauth-scopes";
 
 const GENERIC_FAILURE = "Unable to complete authorization. Try again.";
@@ -28,16 +29,6 @@ function readConsentRequest(): ConsentRequest {
     clientId: params.get("client_id"),
     scopes: parseScopes(params.get("scope")),
   };
-}
-
-function redirectTarget(data: unknown): string | null {
-  if (!data || typeof data !== "object") return null;
-  const { url, redirect_uri: redirectUri } = data as {
-    url?: unknown;
-    redirect_uri?: unknown;
-  };
-  const target = url ?? redirectUri;
-  return typeof target === "string" ? target : null;
 }
 
 function AppIdentity(props: { clientId: string | null }) {

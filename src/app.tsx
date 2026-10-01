@@ -18,7 +18,9 @@ function RootLayout(props: { children: JSX.Element }) {
 
   return (
     <Show when={!isPublic()} fallback={props.children}>
-      <AuthGuard redirectTo={loginRedirect()}>{props.children}</AuthGuard>
+      <AuthGuard redirectTo={loginRedirect()} requireTwoFactor>
+        {props.children}
+      </AuthGuard>
     </Show>
   );
 }

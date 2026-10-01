@@ -71,7 +71,6 @@ interface CleanDraft {
   email: string;
   role: string;
   appAccess: UserDraft["appAccess"];
-  requireMfa: boolean;
 }
 
 function cleanDraft(draft: UserDraft): CleanDraft {
@@ -90,7 +89,6 @@ function cleanDraft(draft: UserDraft): CleanDraft {
     email,
     role: toRoleValue(draft.role),
     appAccess: ALL_APPS.filter((app) => draft.appAccess.includes(app)),
-    requireMfa: draft.requireMfa,
   };
 }
 
@@ -144,7 +142,6 @@ export async function inviteUser(draft: UserDraft): Promise<void> {
     data: {
       initials: toInitials(clean.name),
       appAccess: clean.appAccess,
-      twoFactorEnabled: clean.requireMfa,
       emailVerified: true,
     },
   });
@@ -179,7 +176,6 @@ export async function updateUser(
         email: clean.email,
         initials: toInitials(clean.name),
         appAccess: clean.appAccess,
-        twoFactorEnabled: clean.requireMfa,
       },
     });
   } catch {

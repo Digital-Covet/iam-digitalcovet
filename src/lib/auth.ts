@@ -14,6 +14,7 @@ import { sendEmail } from "@/services/email";
 import { renderDeleteVerificationEmail } from "@/services/email-templates";
 import { CLIENT_APPS, effectiveAppAccess } from "./app-access";
 import { createAuditLog } from "./audit";
+import { ROUTES } from "./constants";
 import { loadPasswordPolicies } from "./password-policy-store";
 import { validatePassword } from "./password-validation";
 import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
@@ -77,9 +78,20 @@ export const auth = betterAuth({
           const user = app
             ? await prisma.user.findUnique({
                 where: { id: code.userId },
-                select: { role: true, appAccess: true },
+                select: {
+                  role: true,
+                  appAccess: true,
+                  twoFactorEnabled: true,
+                },
               })
             : null;
+          // Two-factor is mandatory; the postLogin page below normally sends
+          // unenrolled users to set it up first, so this only stops a bypass.
+          if (user && user.twoFactorEnabled !== true) {
+            throw new APIError("FORBIDDEN", {
+              message: "Set up two-factor authentication to continue.",
+            });
+          }
           if (!app || !user || !effectiveAppAccess(user).includes(app)) {
             console.warn("[Auth] authorization refused", {
               clientId: code.clientId,
@@ -325,6 +337,11 @@ export const auth = betterAuth({
     oauthProvider({
       loginPage: "/auth/login",
       consentPage: "/consent",
+      postLogin: {
+        page: ROUTES.SETUP_2FA,
+        shouldRedirect: ({ user }) => user.twoFactorEnabled !== true,
+        consentReferenceId: () => undefined,
+      },
       scopes: ["openid", "profile", "email", "offline_access"],
       cachedTrustedClients: new Set(["share", "portfolio", "desk"]),
       storeClientSecret: "hashed",

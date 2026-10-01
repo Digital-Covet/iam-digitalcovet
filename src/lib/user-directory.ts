@@ -99,7 +99,6 @@ export const EMPTY_DRAFT: UserDraft = {
   email: "",
   role: "Employee",
   appAccess: [],
-  requireMfa: true,
 };
 
 export function toDraft(user: DirectoryUser): UserDraft {
@@ -110,7 +109,6 @@ export function toDraft(user: DirectoryUser): UserDraft {
     email: user.email,
     role: user.role,
     appAccess: [...user.appAccess],
-    requireMfa: user.mfaStatus === "Enabled",
   };
 }
 

@@ -9,10 +9,8 @@ import {
 } from "@/components/account-settings/action-error";
 import { BackupCodeList } from "@/components/account-settings/backup-code-list";
 import { PasswordConfirmDialog } from "@/components/account-settings/password-confirm-dialog";
-import {
-  type SetupMode,
-  TwoFactorSetupDialog,
-} from "@/components/account-settings/two-factor-setup-dialog";
+import { TwoFactorSetupDialog } from "@/components/account-settings/two-factor-setup-dialog";
+import type { SetupMode } from "@/components/account-settings/two-factor-setup-flow";
 import { toaster } from "@/components/auth/auth-toaster";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
