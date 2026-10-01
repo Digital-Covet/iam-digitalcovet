@@ -20,6 +20,10 @@ export const CLIENT_APPS: Readonly<Record<string, AppAccess>> = {
   desk: "Desk",
 };
 
+export const CLIENT_ID_BY_APP = Object.fromEntries(
+  Object.entries(CLIENT_APPS).map(([clientId, app]) => [app, clientId]),
+) as Record<AppAccess, string>;
+
 /** The apps a user may use: all of them for an elevated role, else their list. */
 export function effectiveAppAccess(user: Record<string, unknown>): AppAccess[] {
   if (typeof user.role === "string" && ELEVATED_ROLES.has(user.role)) {

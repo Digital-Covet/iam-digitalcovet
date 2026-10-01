@@ -1,254 +1,182 @@
-import { Field } from "@ark-ui/solid/field";
 import { PinInput } from "@ark-ui/solid/pin-input";
-import { useNavigate } from "@solidjs/router";
-import { createEffect, createSignal, For, onCleanup } from "solid-js";
-import { AuthToaster, authToaster } from "@/components/auth/auth-toaster";
+import KeyRound from "lucide-solid/icons/key-round";
+import LoaderCircle from "lucide-solid/icons/loader-circle";
+import Smartphone from "lucide-solid/icons/smartphone";
+import { createSignal, Index, Match, Show, Switch } from "solid-js";
+import { AuthErrorAlert } from "@/components/auth/auth-error-alert";
+import { TextField } from "@/components/ui/text-field";
 import { authClient } from "@/lib/auth-client";
+import { ROUTES } from "@/lib/constants";
+import { resolveSafeRedirect } from "@/lib/safe-redirect";
 
-interface TwoFactorVerifyProps {
-  redirectTo?: string;
-  onVerified?: () => void;
+const CODE_LENGTH = 6;
+const PIN_CELLS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
+const GENERIC_FAILURE = "Unable to verify the code. Try again.";
+
+const LABEL_CLASS = "text-[11px] font-medium uppercase tracking-[0.08em] text-foreground-muted";
+const LINK_BUTTON_CLASS =
+  "text-xs text-[#f87171] underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring";
+const PIN_CELL_CLASS =
+  "h-12 w-full min-w-0 rounded-md border border-border bg-surface-raised text-center font-mono text-lg text-foreground " +
+  "tabular-nums transition-[transform,border-color] duration-[80ms] " +
+  "focus:scale-105 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/40 " +
+  "data-[invalid]:border-critical-text disabled:opacity-60";
+
+type VerifyMode = "totp" | "backup";
+
+function isOAuthFlow(params: URLSearchParams): boolean {
+  return params.has("client_id") && params.has("response_type") && params.has("code_challenge");
 }
 
-type AuthMode = "totp" | "backup";
-
-const createEmptyPin = (count: number) =>
-  Array.from({ length: count }, () => "");
-
-export default function TwoFactorVerify({
-  redirectTo = "/dashboard",
-  onVerified,
-}: TwoFactorVerifyProps) {
-  const navigate = useNavigate();
-  const [mode, setMode] = createSignal<AuthMode>("totp");
-  const [code, setCode] = createSignal("");
-  const [pinValue, setPinValue] = createSignal<string[]>(createEmptyPin(6));
-  const [isLoading, setIsLoading] = createSignal(false);
+export function TwoFactorVerify(props: { redirectTo: string | null }) {
+  const [mode, setMode] = createSignal<VerifyMode>("totp");
+  const [pin, setPin] = createSignal<string[]>([]);
+  const [backupCode, setBackupCode] = createSignal("");
   const [error, setError] = createSignal<string | null>(null);
-  const [cooldown, setCooldown] = createSignal(0);
-  let hiddenInputRef: HTMLInputElement | undefined;
+  const [pending, setPending] = createSignal(false);
+  let pinContainer: HTMLDivElement | undefined;
 
-  createEffect(() => {
-    const remaining = cooldown();
-    if (remaining <= 0) return;
+  const totpCode = () => pin().join("");
+  const canSubmit = () =>
+    !pending() &&
+    (mode() === "totp" ? totpCode().length === CODE_LENGTH : backupCode().trim().length > 0);
 
-    const timer = window.setTimeout(() => {
-      setCooldown((current) => Math.max(0, current - 1));
-    }, 1000);
-
-    onCleanup(() => window.clearTimeout(timer));
-  });
-
-  createEffect(() => {
-    if (hiddenInputRef && isTotp()) {
-      hiddenInputRef.value = code();
-    }
-  });
-
-  const handleHiddenInput = (e: InputEvent) => {
-    const target = e.currentTarget as HTMLInputElement;
-    const value = target.value.replace(/\D/g, "").slice(0, 6);
-    target.value = value;
-    setCode(value);
-    const pin = createEmptyPin(6);
-    for (let i = 0; i < Math.min(value.length, 6); i++) {
-      pin[i] = value[i];
-    }
-    setPinValue(pin);
+  function switchMode(next: VerifyMode) {
     setError(null);
-  };
+    setMode(next);
+  }
 
-  const clearCode = () => {
-    setCode("");
-    setPinValue(createEmptyPin(6));
-  };
+  function resetPin() {
+    setPin([]);
+    pinContainer?.querySelector("input")?.focus();
+  }
 
-  const validateInput = (): boolean => {
-    if (mode() === "totp") {
-      return /^\d{6}$/.test(code());
-    }
+  function continueAfterVerification() {
+    const params = new URLSearchParams(window.location.search);
+    // Sign-in in a downstream-app flow must resume the interrupted authorization request.
+    const destination = isOAuthFlow(params)
+      ? `/api/auth/oauth2/authorize?${params.toString()}`
+      : resolveSafeRedirect(props.redirectTo);
+    window.location.assign(destination);
+  }
 
-    return code().trim().length >= 8;
-  };
-
-  const handleSubmit = async (e: SubmitEvent) => {
-    e.preventDefault();
-
-    if (cooldown() > 0) return;
-
-    if (!validateInput()) {
-      setError(
-        mode() === "totp"
-          ? "Please enter a valid 6-digit code."
-          : "Please enter a valid backup code.",
-      );
-      return;
-    }
-
-    setIsLoading(true);
+  async function verify(code: string) {
+    if (pending()) return;
     setError(null);
+    setPending(true);
 
     try {
-      let response: { error?: { message?: string } | null } | undefined;
+      const { data, error: failure } =
+        mode() === "totp"
+          ? await authClient.twoFactor.verifyTotp({ code })
+          : await authClient.twoFactor.verifyBackupCode({ code });
 
-      if (mode() === "totp") {
-        response = await authClient.twoFactor.verifyTotp({
-          code: code(),
-          trustDevice: false,
-        });
-      } else {
-        response = await authClient.twoFactor.verifyBackupCode({
-          code: code(),
-          trustDevice: false,
-        });
+      if (failure) {
+        setError(failure.message || GENERIC_FAILURE);
+        if (mode() === "totp") resetPin();
+        return;
       }
-
-      if (response?.error) {
-        throw new Error(response.error.message ?? "Verification failed");
-      }
-
-      authToaster.create({
-        title: "Verification successful!",
-        type: "success",
-      });
-      onVerified?.();
-      if (!redirectTo) return;
-      if (redirectTo.startsWith("http")) {
-        window.location.replace(redirectTo);
-      } else {
-        navigate(redirectTo, { replace: true });
-      }
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Invalid code. Please try again.";
-
-      setError(message);
-      setCooldown(5);
-      clearCode();
-
-      authToaster.create({
-        title: message,
-        type: "error",
-      });
+      const handledByPlugin = data && "redirect" in data && data.redirect;
+      if (!handledByPlugin) continueAfterVerification();
+    } catch {
+      setError(GENERIC_FAILURE);
     } finally {
-      setIsLoading(false);
+      setPending(false);
     }
-  };
+  }
 
-  const toggleMode = () => {
-    setMode((prev) => (prev === "totp" ? "backup" : "totp"));
-    clearCode();
-    setError(null);
-  };
-
-  const disabled = () => isLoading() || cooldown() > 0;
-  const isTotp = () => mode() === "totp";
+  function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!canSubmit()) return;
+    void verify(mode() === "totp" ? totpCode() : backupCode().trim());
+  }
 
   return (
-    <div class="space-y-4">
-      <form onSubmit={handleSubmit} class="space-y-4">
-        <Field.Root invalid={error() !== null} disabled={disabled()}>
-          <div class="space-y-3">
-            <Field.Label class="block text-center text-sm font-medium">
-              {isTotp() ? "Authenticator code" : "Backup code"}
-            </Field.Label>
-            {isTotp() ? (
-              <>
-                <input
-                  ref={hiddenInputRef}
-                  type="text"
-                  inputmode="numeric"
-                  autocomplete="one-time-code"
-                  name="otp"
-                  value={code()}
-                  onInput={handleHiddenInput}
-                  disabled={disabled()}
-                  class="sr-only"
-                  aria-hidden="true"
-                  tabindex={-1}
-                />
-                <PinInput.Root
-                  value={pinValue()}
-                  onValueChange={({ value }) => {
-                    setPinValue(value);
-                    setCode(value.join(""));
-                    setError(null);
-                  }}
-                  count={6}
-                  otp
-                  type="numeric"
-                  disabled={disabled()}
-                  invalid={error() !== null}
-                  aria-label="Authenticator code"
-                >
-                  <PinInput.Control class="flex justify-center gap-2">
-                    <For each={Array.from({ length: 6 }, (_, index) => index)}>
-                      {(index) => (
-                        <PinInput.Input
-                          index={index}
-                          class="h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-semibold shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                      )}
-                    </For>
-                  </PinInput.Control>
-                  <PinInput.HiddenInput />
-                </PinInput.Root>
-              </>
-            ) : (
-              <Field.Input
-                id="code"
-                type="text"
-                autocomplete="off"
-                maxlength={24}
-                value={code()}
-                onInput={(e) => {
-                  setCode(e.currentTarget.value);
-                  setError(null);
-                }}
-                disabled={disabled()}
-                placeholder="8+ character backup code"
-                class="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            )}
-          </div>
-          {error() && (
-            <Field.ErrorText class="rounded-md border border-red-100 bg-red-50 p-3 text-sm text-red-600">
-              {error()}
-            </Field.ErrorText>
-          )}
-        </Field.Root>
-        <button
-          type="submit"
-          class="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
-          disabled={disabled() || code().length === 0}
-        >
-          {isLoading()
-            ? "Verifying..."
-            : cooldown() > 0
-              ? `Try again in ${cooldown()}s`
-              : "Verify code"}
-        </button>
-      </form>
-      <div class="relative py-2">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t" />
-        </div>
-        <div class="relative flex justify-center text-xs uppercase">
-          <span class="bg-background px-2 text-muted-foreground">
-            Having trouble?
-          </span>
-        </div>
+    <form onSubmit={handleSubmit} class="space-y-5" novalidate>
+      <div class="space-y-1">
+        <h2 class="font-heading text-lg font-bold tracking-[-0.01em]">Two-Factor Authentication</h2>
+        <p class="text-[13px] text-foreground-muted">
+          <Show
+            when={mode() === "totp"}
+            fallback="Enter one of your single-use backup codes"
+          >
+            Enter the 6-digit code from your authenticator app
+          </Show>
+        </p>
       </div>
+
+      <AuthErrorAlert message={error()} />
+
+      <Switch>
+        <Match when={mode() === "totp"}>
+          <PinInput.Root
+            count={CODE_LENGTH}
+            type="numeric"
+            otp
+            autoFocus
+            value={pin()}
+            invalid={error() !== null}
+            disabled={pending()}
+            onValueChange={(details) => setPin(details.value)}
+            onValueComplete={(details) => void verify(details.valueAsString)}
+          >
+            <PinInput.Label class={LABEL_CLASS}>Authentication Code</PinInput.Label>
+            <PinInput.Control ref={pinContainer} class="mt-1.5 grid grid-cols-6 gap-2">
+              <Index each={PIN_CELLS}>
+                {(cell) => <PinInput.Input index={cell()} class={PIN_CELL_CLASS} />}
+              </Index>
+            </PinInput.Control>
+            <PinInput.HiddenInput />
+          </PinInput.Root>
+        </Match>
+        <Match when={mode() === "backup"}>
+          <TextField
+            id="backup-code"
+            label="Backup Code"
+            autocomplete="one-time-code"
+            autocapitalize="off"
+            spellcheck={false}
+            autofocus
+            mono
+            placeholder="xxxxx-xxxxx"
+            value={backupCode()}
+            invalid={error() !== null}
+            error={error()}
+            onInput={setBackupCode}
+          />
+        </Match>
+      </Switch>
+
       <button
-        type="button"
-        onClick={toggleMode}
-        class="inline-flex h-10 w-full items-center justify-center rounded-md border border-transparent bg-transparent px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground"
+        type="submit"
+        disabled={!canSubmit()}
+        class="flex h-10 w-full items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-fg transition-colors duration-[120ms] hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isTotp()
-          ? "Use a backup code instead"
-          : "Use authenticator app instead"}
+        <Show when={pending()}>
+          <LoaderCircle size={16} stroke-width={1.75} class="animate-spin" />
+        </Show>
+        {pending() ? "Verifying…" : "Verify & Continue"}
       </button>
-      <AuthToaster />
-    </div>
+
+      <div class="flex flex-col items-center gap-3 border-t border-border pt-4">
+        <Show
+          when={mode() === "totp"}
+          fallback={
+            <button type="button" onClick={() => switchMode("totp")} class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}>
+              <Smartphone size={14} stroke-width={1.75} />
+              Use your authenticator app instead
+            </button>
+          }
+        >
+          <button type="button" onClick={() => switchMode("backup")} class={`${LINK_BUTTON_CLASS} flex items-center gap-1.5`}>
+            <KeyRound size={14} stroke-width={1.75} />
+            Lost access to authenticator? Use a backup code
+          </button>
+        </Show>
+        <a href={ROUTES.LOGIN} class="text-xs text-foreground-muted underline-offset-2 hover:underline">
+          Back to sign in
+        </a>
+      </div>
+    </form>
   );
 }

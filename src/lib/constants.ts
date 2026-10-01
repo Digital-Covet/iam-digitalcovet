@@ -21,6 +21,7 @@ export const ROUTES = {
   SETUP_2FA: "/auth/setup-2fa",
   VERIFY_2FA: "/auth/verify-2fa",
   DASHBOARD: "/dashboard",
+  ACCOUNT_SETTINGS: "/account-settings",
   UPLOAD: "/upload",
   RECIEVE: "/recieve",
 } as const;

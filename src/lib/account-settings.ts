@@ -4,13 +4,8 @@ import { prisma } from "@/db";
 import { auth } from "@/lib/auth";
 import { resolveAvatarUrl } from "@/lib/avatar";
 import { toInitials } from "@/lib/initials";
-import type { AccountSettingsData, ActiveSession, UserRole } from "@/types";
-
-const roleLabels: Record<string, UserRole> = {
-  employee: "Employee",
-  admin: "Admin",
-  superadmin: "SuperAdmin",
-};
+import { toRoleLabel } from "@/lib/roles";
+import type { AccountSettingsData, ActiveSession } from "@/types";
 
 const MAX_NAME_LENGTH = 100;
 
@@ -98,7 +93,7 @@ export const getAccountSettings = query(async (): Promise<AccountSettingsData | 
       name: user.name,
       email: user.email,
       initials,
-      role: roleLabels[user.role] ?? "Employee",
+      role: toRoleLabel(user.role),
       department: user.departmentId,
       avatarUrl,
       createdAt: user.createdAt.toISOString(),

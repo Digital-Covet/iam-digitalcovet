@@ -1,72 +1,23 @@
 import { Meta, Title } from "@solidjs/meta";
-import { useNavigate, useSearchParams } from "@solidjs/router";
-import { onMount } from "solid-js";
-import TwoFactorVerify from "@/components/auth/two-factor-verify";
+import { useSearchParams } from "@solidjs/router";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { TwoFactorVerify } from "@/components/auth/two-factor-verify";
 import { pageMetadata } from "@/lib/seo";
-import { authClient } from "@/lib/auth-client";
 
-export default function Verify2FAPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const search = typeof window !== "undefined" ? window.location.search : "";
-  const isOAuthFlow = !!(
-    search &&
-    search.includes("client_id=") &&
-    search.includes("response_type=") &&
-    search.includes("code_challenge=")
-  );
-  const oauthRedirectUrl = isOAuthFlow
-    ? `${window.location.origin}/api/auth/oauth2/authorize${search}`
-    : "";
-
-  onMount(() => {
-    void (async () => {
-      try {
-        const session = await authClient.getSession();
-        if (session.data?.session) {
-          // OAuth flow: resume authorize so the client gets a `code`.
-          // Navigating to /dashboard here would drop client_id/response_type/
-          // code_challenge and the desk would never receive its callback.
-          if (isOAuthFlow && oauthRedirectUrl) {
-            window.location.replace(oauthRedirectUrl);
-            return;
-          }
-          const redirectParam = Array.isArray(searchParams.redirect)
-            ? searchParams.redirect[0]
-            : searchParams.redirect;
-          navigate(redirectParam || "/dashboard", { replace: true });
-        }
-      } catch {
-        // Session check failed — stay on 2FA page
-      }
-    })();
-  });
-
-  const redirectParam = Array.isArray(searchParams.redirect)
-    ? searchParams.redirect[0]
-    : searchParams.redirect;
-  const standardRedirect = redirectParam || "/dashboard";
+export default function Verify2faPage() {
+  const [params] = useSearchParams();
+  const redirectTo = () => (typeof params.redirect === "string" ? params.redirect : null);
 
   return (
     <>
       <Title>{pageMetadata.verify2fa.title}</Title>
       <Meta name="description" content={pageMetadata.verify2fa.description} />
-      <div class="flex min-h-screen items-center justify-center p-4">
-        <div class="w-full max-w-md space-y-6 p-8 shadow-md">
-          <div class="text-center">
-            <h1 class="text-2xl font-bold tracking-tight">
-              Two-Factor Authentication
-            </h1>
-            <p class="mt-2 text-sm">
-              Enter your security code to complete sign-in.
-            </p>
-          </div>
-          <TwoFactorVerify
-            redirectTo={isOAuthFlow ? oauthRedirectUrl : standardRedirect}
-          />
-        </div>
-      </div>
+      <AuthShell
+        title="Verify your identity"
+        subtitle="One more step to access Share, Portfolio, and Desk"
+      >
+        <TwoFactorVerify redirectTo={redirectTo()} />
+      </AuthShell>
     </>
   );
 }

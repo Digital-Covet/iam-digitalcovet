@@ -10,7 +10,7 @@ import { renderDeleteVerificationEmail } from "@/services/email-templates";
 import { CLIENT_APPS, effectiveAppAccess } from "./app-access";
 import { ac, adminRole, employeeRole, superadminRole } from "./permissions";
 import { createAuditLog } from "./audit";
-import { loadPasswordPolicies } from "./password-policies";
+import { loadPasswordPolicies } from "./password-policy-store";
 import { validatePassword } from "./password-validation";
 
 const storeBackupCodes =

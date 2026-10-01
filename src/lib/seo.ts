@@ -15,6 +15,30 @@ export const pageMetadata = {
     title: "Dashboard | Send Digital Covet",
     description: "Manage your shared files, track downloads, and control access permissions.",
   },
+  users: {
+    title: "User Directory | IAM Digital Covet",
+    description: "Search, invite, edit, suspend, and impersonate Digital Covet identities and their app entitlements.",
+  },
+  authSettings: {
+    title: "Auth Policies | IAM Digital Covet",
+    description: "Configure password complexity, expiry, lockout thresholds, and two-factor enforcement.",
+  },
+  auditLogs: {
+    title: "Audit Logs | IAM Digital Covet",
+    description: "Investigate authentication events, token grants, lockouts, and admin overrides across the ecosystem.",
+  },
+  apps: {
+    title: "Applications | IAM Digital Covet",
+    description: "Launch connected apps and review their single sign-on client configuration.",
+  },
+  rolesAccess: {
+    title: "Roles & RBAC | IAM Digital Covet",
+    description: "Review role permission sets across downstream apps, the user directory, and sessions.",
+  },
+  accountSettings: {
+    title: "Account Settings | IAM Digital Covet",
+    description: "Manage your profile, password, two-factor authentication, and active sessions.",
+  },
   upload: {
     title: "Upload | Send Digital Covet",
     description: "Upload and encrypt files securely for sharing with automatic expiry.",

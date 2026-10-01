@@ -1,7 +1,6 @@
 import { createHmac, randomUUID } from "node:crypto";
 import { prisma } from "@/db";
-
-const FRONT_CHANNEL_LOGOUT_PATH = "/api/auth/front-channel-logout";
+import { FRONT_CHANNEL_LOGOUT_PATH } from "@/lib/connected-apps-model";
 
 interface LogoutNotification {
 	sub: string;
