@@ -1,6 +1,7 @@
 import { Menu } from "@ark-ui/solid/menu";
 import { useNavigate } from "@solidjs/router";
 import ChevronsUpDown from "lucide-solid/icons/chevrons-up-down";
+import Compass from "lucide-solid/icons/compass";
 import LogOut from "lucide-solid/icons/log-out";
 import UserRound from "lucide-solid/icons/user-round";
 import { Show } from "solid-js";
@@ -9,6 +10,8 @@ import { AppAvatar } from "@/components/ui/avatar";
 import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 import { toInitials } from "@/lib/initials";
+import { requestTourRestart } from "@/lib/tour-state";
+import { ACCOUNT_MENU_TOUR_ID } from "@/lib/tour-steps";
 
 interface AccountMenuProps {
   currentPath: string;
@@ -23,6 +26,7 @@ interface SessionUser {
 }
 
 const MENU_ACCOUNT = "account";
+const MENU_TOUR = "tour";
 const MENU_SIGN_OUT = "sign-out";
 
 const ITEM_CLASS =
@@ -45,13 +49,16 @@ export function AccountMenu(props: AccountMenuProps) {
     if (value === MENU_ACCOUNT) {
       props.onNavigate?.();
       navigate(ROUTES.ACCOUNT_SETTINGS);
+    } else if (value === MENU_TOUR) {
+      props.onNavigate?.();
+      requestTourRestart("console");
     } else if (value === MENU_SIGN_OUT) {
       void signOut();
     }
   }
 
   return (
-    <div class="border-t border-border p-2">
+    <div class="border-t border-border p-2" data-tour={ACCOUNT_MENU_TOUR_ID}>
       <Menu.Root
         positioning={{ placement: "top-start", gutter: 8 }}
         onSelect={(details) => handleSelect(details.value)}
@@ -96,6 +103,18 @@ export function AccountMenu(props: AccountMenuProps) {
                   class="text-foreground-muted"
                 />
                 <span class="flex-1">Account settings</span>
+              </Menu.Item>
+
+              <Menu.Item
+                value={MENU_TOUR}
+                class={`${ITEM_CLASS} text-foreground data-[highlighted]:bg-surface`}
+              >
+                <Compass
+                  size={16}
+                  stroke-width={1.75}
+                  class="text-foreground-muted"
+                />
+                <span class="flex-1">Take the tour</span>
               </Menu.Item>
 
               <Menu.Item

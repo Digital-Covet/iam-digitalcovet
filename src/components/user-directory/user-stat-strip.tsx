@@ -1,10 +1,14 @@
 import { For } from "solid-js";
 import { Card } from "@/components/ui/card";
+import { DIRECTORY_TOUR_TARGETS } from "@/lib/tour-steps";
 import type { StatCardData } from "@/types";
 
 export function UserStatStrip(props: { stats: StatCardData[] }) {
   return (
-    <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div
+      class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3"
+      data-tour={DIRECTORY_TOUR_TARGETS.stats}
+    >
       <For each={props.stats}>
         {(stat) => (
           <Card class="flex items-center justify-between p-4">

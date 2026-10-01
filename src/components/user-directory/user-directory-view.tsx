@@ -1,4 +1,5 @@
 import { revalidate } from "@solidjs/router";
+import Compass from "lucide-solid/icons/compass";
 import Download from "lucide-solid/icons/download";
 import Plus from "lucide-solid/icons/plus";
 import { createMemo, createSignal, Show } from "solid-js";
@@ -7,6 +8,7 @@ import {
   unwrapClientResult,
 } from "@/components/account-settings/action-error";
 import { toaster } from "@/components/auth/auth-toaster";
+import { GuidedTour } from "@/components/tour/guided-tour";
 import {
   BUTTON_OUTLINE,
   BUTTON_PRIMARY,
@@ -31,6 +33,8 @@ import { authClient } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 import { downloadTextFile } from "@/lib/download";
 import { toRoleLabel } from "@/lib/roles";
+import { requestTourRestart } from "@/lib/tour-state";
+import { DIRECTORY_TOUR_TARGETS } from "@/lib/tour-steps";
 import {
   buildDirectoryStats,
   type DirectoryActor,
@@ -138,13 +142,27 @@ export function UserDirectoryView(props: { users: DirectoryUser[] }) {
         subtitle="Manage enterprise accounts, invitations, and ecosystem entitlements"
         actions={
           <>
-            <button type="button" class={BUTTON_OUTLINE} onClick={exportCsv}>
+            <button
+              type="button"
+              class={BUTTON_OUTLINE}
+              onClick={() => requestTourRestart("user-directory")}
+            >
+              <Compass size={16} stroke-width={1.75} />
+              Page tour
+            </button>
+            <button
+              type="button"
+              class={BUTTON_OUTLINE}
+              data-tour={DIRECTORY_TOUR_TARGETS.export}
+              onClick={exportCsv}
+            >
               <Download size={16} stroke-width={1.75} />
               Export CSV
             </button>
             <button
               type="button"
               class={BUTTON_PRIMARY}
+              data-tour={DIRECTORY_TOUR_TARGETS.invite}
               onClick={() => setEditor(INVITE_TARGET)}
             >
               <Plus size={16} stroke-width={1.75} />
@@ -184,6 +202,7 @@ export function UserDirectoryView(props: { users: DirectoryUser[] }) {
           />
         )}
       </Show>
+      <GuidedTour id="user-directory" />
       <ConfirmActionModal
         pending={confirming()}
         onCancel={() => setConfirming(null)}

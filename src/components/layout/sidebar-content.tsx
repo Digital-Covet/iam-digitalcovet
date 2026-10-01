@@ -1,6 +1,7 @@
 import { For, Show } from "solid-js";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
+import { navTourId } from "@/lib/tour-steps";
 
 interface SidebarContentProps {
   currentPath: string;
@@ -28,6 +29,7 @@ function NavList(props: SidebarContentProps) {
           return (
             <a
               href={item.href}
+              data-tour={navTourId(item.href)}
               onClick={props.onNavigate}
               aria-current={active() ? "page" : undefined}
               title={props.collapsed ? item.label : undefined}

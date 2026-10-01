@@ -6,6 +6,7 @@ import { BrandMark } from "@/components/layout/brand-mark";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { MobileNavDrawer } from "@/components/layout/mobile-nav-drawer";
 import { SidebarContent } from "@/components/layout/sidebar-content";
+import { GuidedTour } from "@/components/tour/guided-tour";
 import { authClient } from "@/lib/auth-client";
 
 export function AppShell(props: { children: JSX.Element }) {
@@ -78,6 +79,8 @@ export function AppShell(props: { children: JSX.Element }) {
           </div>
         </main>
       </div>
+
+      <GuidedTour id="console" />
 
       <MobileNavDrawer
         open={mobileOpen()}

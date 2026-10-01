@@ -1,6 +1,7 @@
 import Search from "lucide-solid/icons/search";
 import { FILTER_CONTROL, FilterSelect } from "@/components/ui/filter-select";
 import { TextField } from "@/components/ui/text-field";
+import { DIRECTORY_TOUR_TARGETS } from "@/lib/tour-steps";
 import {
   APP_FILTER_OPTIONS,
   ROLE_FILTER_OPTIONS,
@@ -17,7 +18,10 @@ interface UserFilterBarProps {
 
 export function UserFilterBar(props: UserFilterBarProps) {
   return (
-    <div class="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-surface p-3 lg:flex-row lg:items-center">
+    <div
+      class="mb-4 flex flex-col gap-3 rounded-lg border border-border bg-surface p-3 lg:flex-row lg:items-center"
+      data-tour={DIRECTORY_TOUR_TARGETS.filters}
+    >
       <div class="lg:w-80">
         <TextField
           id="user-directory-search"

@@ -9,6 +9,7 @@ import {
 } from "@/components/user-directory/user-cells";
 import { UserRowMenu } from "@/components/user-directory/user-row-menu";
 import { formatDate } from "@/lib/format-date";
+import { DIRECTORY_TOUR_TARGETS } from "@/lib/tour-steps";
 import type { DirectoryActor } from "@/lib/user-directory";
 import type { DirectoryUser } from "@/types";
 
@@ -101,7 +102,7 @@ export function UserTable(props: UserTableProps) {
           />
         }
       >
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" data-tour={DIRECTORY_TOUR_TARGETS.table}>
           <table class="w-full border-collapse">
             <thead>
               <tr>
